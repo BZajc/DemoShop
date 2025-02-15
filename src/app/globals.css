@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: var(--font-raleway), sans-serif;
+}
+
+:root {
+  --radius: 8px;
+}
