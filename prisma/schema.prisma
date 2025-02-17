@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -45,14 +42,13 @@ model User {
   email           String  @unique
   password        String?
   name            String  @unique
+  realName        String?
   hashtag         String? 
-  backgroundPhoto String? // Remove later
   avatarPhoto     String?
   posts           Post[]  
   comments        Comment[]
   aboutMe         String?
-  tags            UserTag[]
-  customSections  CustomSection[] // Remove later
+  selectedTags    UserTag[] @relation("UserSelectedTags")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   lastActive      DateTime @default(now())
@@ -62,33 +58,21 @@ model User {
 
   following       Follows[] @relation("Following")
   followers       Follows[] @relation("Followers")
-  
+
   @@unique([name, hashtag])
 }
 
-
 model Follows {
-  followerId String
+  followerId  String
   followingId String
 
-  follower User @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
+  follower  User @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
   following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
   @@id([followerId, followingId])
 }
-
-model CustomSection { // Remove later
-  id        String   @id @default(uuid())
-  userId    String
-  icon      String   
-  title     String   
-  content   String   
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-
 
 model Post {
   id        String    @id @default(uuid())
@@ -126,17 +110,16 @@ model Comment {
 
 model UserTag {
   userId String
-  tagId String
+  tagId  String
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation("UserSelectedTags", fields: [userId], references: [id], onDelete: Cascade)
   tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([userId, tagId])
 }
-
 model PostTag {
   postId String
-  tagId String
+  tagId  String
 
   post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
   tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
