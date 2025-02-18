@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
 import SearchHeader from "@/app/components/profile/SearchHeader";
 import Image from "next/image";
+import TagsAsButtons from "@/app/components/profile/TagsAsButtons";
 
 export default async function ProfilePage({
   params,
@@ -32,9 +33,13 @@ export default async function ProfilePage({
       hashtag: true,
       avatarPhoto: true,
       createdAt: true,
+      realName: true,
       posts: { select: { id: true } },
       following: { select: { followingId: true } },
       followers: { select: { followerId: true } },
+      selectedTags: {
+        include: { tag: true },
+      },
     },
   });
 
@@ -91,20 +96,26 @@ export default async function ProfilePage({
         </h1>
       </header>
 
-      <section className="max-w-[1600px] flex p-4">
-        <div className="w-[180px] h-[50px] relative">
+      <section className="max-w-[1600px] flex p-4 mx-auto">
+        <div className="min-w-[140px] h-auto relative">
           <Image
             src={user.avatarPhoto || "/images/profileMalePlaceholder.webp"}
             alt={`${user.name}'s profile picture`}
-            height={180}
-            width={180}
+            height={140}
+            width={140}
             className="rounded-full border-4 border-white"
           />
         </div>
-        <div>
-          <p>Username: {resolvedParams.profile}</p>
-          <p>Real Name: John Doe</p>
-          <p>Preferred Tags: #Test #Tags</p>
+        <div className="flex flex-col justify-between">
+          <div>
+            <h2 className="text-3xl">Username: {resolvedParams.profile}</h2>
+            <h2 className="text-xl">Real Name: {user.realName}</h2>
+          </div>
+          <div className="flex items-center">
+            <div className="flex flex-wrap gap-2 mt-2">
+              <TagsAsButtons selectedTags={user.selectedTags} />
+            </div>
+          </div>
         </div>
       </section>
     </div>

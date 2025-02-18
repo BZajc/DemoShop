@@ -119,6 +119,7 @@ export default function FirstTimeData() {
                 const response = await updateUserData(formData);
 
                 if (response.success) {
+                  setIsVisible(false);
                   console.log("User data updated successfully!", response.user);
                 } else {
                   console.error("Failed to update user data:", response.error);

@@ -25,7 +25,9 @@ export default function FirstModal({
         const response = await fetch("/api/getTags");
         const data = await response.json();
         if (data.success) {
-          const sortedTags = data.tags.sort((a: string, b: string) => a.localeCompare(b));
+          const sortedTags = data.tags.sort((a: string, b: string) =>
+            a.localeCompare(b)
+          );
           setAvailableTags(sortedTags);
         }
       } catch (error) {
@@ -37,20 +39,30 @@ export default function FirstModal({
 
   // Show sorted tags on focus and filter while typing
   useEffect(() => {
-    if (tagInput.length > 0) {
+    if (tagInput.trim().length > 0) {
+      // Remove leading '#' characters from user input
+      const cleanedInput = tagInput.trim().replace(/^#+/, "");
+
       const filteredTags = availableTags
         .filter(
           (tag) =>
-            tag.toLowerCase().includes(tagInput.toLowerCase()) &&
+            // Remove leading '#' from available tags and check if they start with the cleaned input
+            tag
+              .replace(/^#+/, "")
+              .toLowerCase()
+              .startsWith(cleanedInput.toLowerCase()) &&
+            // Ensure the tag is not already selected by the user
             !userData.selectedTags?.includes(tag)
         )
-        .sort((a, b) => a.localeCompare(b)); // Ensure sorting when filtering
+        // Sort the filtered tags alphabetically
+        .sort((a, b) => a.localeCompare(b));
       setSuggestedTags(filteredTags);
     } else {
+      // If input is empty show all available tags (excluding selected ones) sorted alphabetically
       setSuggestedTags(
         availableTags
           .filter((tag) => !userData.selectedTags?.includes(tag))
-          .sort((a, b) => a.localeCompare(b)) // Sort if input is empty
+          .sort((a, b) => a.localeCompare(b))
       );
     }
   }, [tagInput, isFocused, userData.selectedTags, availableTags]);
@@ -70,34 +82,45 @@ export default function FirstModal({
     if (e.key === "Enter") {
       e.preventDefault();
       if (!tagInput.trim()) return;
-
+  
       // Remove unnecessary "#"
-      const cleanedTag = tagInput
-        .replace(/^#+/, "")
-        .replace(/[^a-zA-Z0-9_]/g, "");
-
+      const cleanedTag = tagInput.trim().replace(/^#+/, "");
+  
       if (cleanedTag.length > 20) {
         setErrorMessage("❌ Tag can have a maximum of 20 characters.");
         return;
       }
-
+  
       if (!cleanedTag) {
-        setErrorMessage(
-          "❌ The tag must contain at least one valid character."
-        );
+        setErrorMessage("❌ The tag must contain at least one valid character.");
         return;
       }
-
-      const formattedTag = `#${cleanedTag}`;
-
-      if (!selectedTags.includes(formattedTag)) {
-        setSelectedTags([...selectedTags, formattedTag]);
-        setErrorMessage("");
+  
+      // Ensure the tag exists in the available tags list
+      const matchingTag = availableTags.find(
+        (tag) => tag.replace(/^#+/, "").toLowerCase() === cleanedTag.toLowerCase()
+      );
+  
+      if (!matchingTag) {
+        setErrorMessage("❌ This tag does not exist in the available list.");
+        return;
       }
+  
+      // Add the tag if not already selected
+      if (!userData.selectedTags?.includes(matchingTag)) {
+        handleDataChange({
+          ...userData,
+          selectedTags: [...(userData.selectedTags || []), matchingTag],
+        });
+      }
+  
+      // Clear input and reset suggestions
       setTagInput("");
       setSuggestedTags([]);
+      setErrorMessage("");
     }
   };
+  
 
   // Remove tag from the list
   const handleTagRemove = (tag: string) => {
@@ -181,7 +204,7 @@ export default function FirstModal({
 
           {/* List of suggested tags */}
           {isFocused && suggestedTags.length > 0 && (
-            <div className="absolute bottom-12 bg-white border border-sky-400 w-[50%] rounded-lg mt-1 p-2 shadow-lg z-50 max-h-[300px] overflow-y-auto">
+            <div className="absolute right-0 bg-white border border-sky-400 w-[50%] rounded-lg mt-1 p-2 shadow-lg z-50 max-h-[300px] overflow-y-auto">
               {suggestedTags.map((tag) => (
                 <div
                   key={tag}
