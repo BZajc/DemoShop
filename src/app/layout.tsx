@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${lexend.variable} antialiased`}>
+      <body className={`${lexend.variable} antialiased custom-scrollbar scrollbar-gutter-stable`}>
 
         {children}
       </body>

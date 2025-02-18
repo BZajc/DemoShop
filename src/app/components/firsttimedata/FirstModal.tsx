@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { UserData } from "./FirstTimeData";
+import { X } from "lucide-react";
 
 interface FirstModalProps {
   userData: UserData;
@@ -222,10 +223,10 @@ export default function FirstModal({
             {userData.selectedTags?.map((tag) => (
               <span
                 key={tag}
-                className="bg-sky-200 text-sky-900 px-3 py-1 rounded-full cursor-pointer hover:bg-sky-300"
+                className="bg-sky-200 text-sky-900 px-3 py-1 rounded-full cursor-pointer hover:bg-sky-300 flex"
                 onClick={() => handleTagRemove(tag)}
               >
-                {tag} ✖
+                {tag} <X />
               </span>
             ))}
           </div>

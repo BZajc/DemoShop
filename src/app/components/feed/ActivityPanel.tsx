@@ -46,7 +46,7 @@ export default function ActivityPanel() {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseUp}
         onMouseUp={handleMouseUp}
-        className="flex items-center gap-12 py-4 px-4 justify-start cursor-grab active:cursor-grabbing overflow-x-auto overflow-y-hidden"
+        className="flex items-center gap-12 py-8 px-4 justify-start cursor-grab active:cursor-grabbing overflow-x-auto overflow-y-hidden custom-scrollbar scrollbar-gutter-stable"
       >
         {[1, 2, 3, 4, 5].map((num) => (
           <button key={num} className="flex flex-col items-center relative transition-all duration-300 hover:scale-[1.1]">
@@ -70,7 +70,6 @@ export default function ActivityPanel() {
         </button>
 
       </div>
-      <div className="w-[90%] border-b-2 border-sky-400 mx-auto mt-4 mb-2"></div>
     </div>
   );
 }

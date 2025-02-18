@@ -1,9 +1,23 @@
 "use client";
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import CreatePost from "./feedpost/CreatePost";
 
 export default function FeedHeader() {
   const [isFocused, setIsFocused] = useState(false);
+  const [showAddPost, setShowAddPost] = useState(false);
+
+  // Disable scrolling when CreatePost is visible
+  useEffect(() => {
+    if (showAddPost) {
+      document.body.style.overflow = "hidden"; // Disable scrolling
+    } else {
+      document.body.style.overflow = ""; // Restore scrolling
+    }
+    return () => {
+      document.body.style.overflow = ""; // Ensure cleanup when component unmounts
+    };
+  }, [showAddPost]);
 
   return (
     <header className="flex m-4">
@@ -28,9 +42,13 @@ export default function FeedHeader() {
       </form>
 
       {/* Publish Button */}
-      <button className="p-4 rounded-full ml-4 bg-sky-200 hover:bg-sky-400 hover:text-white transition-colors duration-300 text-sky-900">
+      <button
+        className="p-4 rounded-full ml-4 bg-sky-200 hover:bg-sky-400 hover:text-white transition-colors duration-300 text-sky-900"
+        onClick={() => setShowAddPost(true)}
+      >
         Publish Picture
       </button>
+      {showAddPost && <CreatePost setShowAddPost={setShowAddPost} />}
     </header>
   );
 }

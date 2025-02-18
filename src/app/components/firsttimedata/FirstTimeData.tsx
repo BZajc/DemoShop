@@ -4,6 +4,7 @@ import FirstModal from "./FirstModal";
 import SecondModal from "./SecondModal";
 import ThirdModal from "./ThirdModal";
 import { updateUserData } from "@/app/api/actions/updateUserData";
+import { X } from "lucide-react";
 
 export interface UserData {
   name?: string;
@@ -54,7 +55,7 @@ export default function FirstTimeData() {
           className="absolute p-2 top-0 right-0 cursor-pointer z-10 transition-all duration-300 hover:scale-[1.20]"
           onClick={() => setShowConfirmPopup(true)}
         >
-          ❌
+          <X />
         </button>
 
         <div
