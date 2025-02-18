@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import FirstModal from "./FirstModal";
 import SecondModal from "./SecondModal";
 import ThirdModal from "./ThirdModal";
-// import { updateUserData } from "@/app/api/actions/updateUserData";
+import { updateUserData } from "@/app/api/actions/updateUserData";
 
 export interface UserData {
   name?: string;
@@ -43,13 +43,12 @@ export default function FirstTimeData() {
   if (!isVisible) return null;
 
   return (
-<section
-  onClick={(e) => {
-    if (e.target === e.currentTarget) setShowConfirmPopup(true);
-  }}
-  className="overflow-hidden fixed top-0 left-0 w-full h-full bg-black/85 z-[999] flex items-center justify-center animate-fade-in"
->
-
+    <section
+      onClick={(e) => {
+        if (e.target === e.currentTarget) setShowConfirmPopup(true);
+      }}
+      className="overflow-hidden fixed top-0 left-0 w-full h-full bg-black/85 z-[999] flex items-center justify-center animate-fade-in"
+    >
       <div className="bg-white rounded-lg text-center w-[600px] relative overflow-hidden max-h-[90vh] overflow-y-auto">
         <button
           className="absolute p-2 top-0 right-0 cursor-pointer z-10 transition-all duration-300 hover:scale-[1.20]"
@@ -101,21 +100,29 @@ export default function FirstTimeData() {
             onClick={async () => {
               if (step === 3) {
                 console.log("Form submitted!", userData);
-                
-                // const response = await updateUserData({
-                //   name: userData.name,
-                //   aboutMe: userData.aboutMe,
-                //   selectedTags: userData.selectedTags,
-                //   imageSrc: userData.imageSrc,
-                // });
 
-                // if(response.success) {
-                //   console.log("User data updated successfully!", response.user)
-                // } else {
-                //   console.error("Failed to update user data:", response.error)
-                // }
+                const formData = new FormData();
+                formData.append("name", userData.name || "");
+                formData.append("aboutMe", userData.aboutMe || "");
+                formData.append(
+                  "selectedTags",
+                  JSON.stringify(userData.selectedTags)
+                );
 
-                setIsVisible(false);
+                if (userData.imageSrc) {
+                  const imageFile = await fetch(userData.imageSrc).then((res) =>
+                    res.blob()
+                  );
+                  formData.append("image", imageFile, "avatar.jpg");
+                }
+
+                const response = await updateUserData(formData);
+
+                if (response.success) {
+                  console.log("User data updated successfully!", response.user);
+                } else {
+                  console.error("Failed to update user data:", response.error);
+                }
               } else {
                 setStep(step + 1);
               }

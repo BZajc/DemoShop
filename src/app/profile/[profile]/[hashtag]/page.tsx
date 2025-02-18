@@ -31,7 +31,6 @@ export default async function ProfilePage({
       name: true,
       hashtag: true,
       avatarPhoto: true,
-      backgroundPhoto: true,
       createdAt: true,
       posts: { select: { id: true } },
       following: { select: { followingId: true } },
@@ -87,7 +86,9 @@ export default async function ProfilePage({
       </nav>
 
       <header className="p-4 mx-auto max-w-[1600px]">
-        <h1 className="text-2xl">{resolvedParams.profile}'s #{resolvedParams.hashtag} Profile</h1>
+        <h1 className="text-2xl">
+          {resolvedParams.profile}'s #{resolvedParams.hashtag} Profile
+        </h1>
       </header>
 
       <section className="max-w-[1600px] flex p-4">

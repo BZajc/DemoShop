@@ -117,6 +117,7 @@ model UserTag {
 
   @@id([userId, tagId])
 }
+
 model PostTag {
   postId String
   tagId  String

@@ -16,131 +16,44 @@ export default function FirstModal({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [isFocused, setIsFocused] = useState(false); // Control input focus
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
 
-  // List of available tags
-  const availableTags = [
-    "#Sun",
-    "#Summer",
-    "#Sweet",
-    "#Sky",
-    "#Snow",
-    "#Super",
-    "#Sunrise",
-    "#SunnyDay",
-    "#Adventure",
-    "#Art",
-    "#Autumn",
-    "#Beach",
-    "#Beautiful",
-    "#Bike",
-    "#Books",
-    "#Business",
-    "#Camping",
-    "#Car",
-    "#Cats",
-    "#City",
-    "#Coffee",
-    "#Cooking",
-    "#Culture",
-    "#Dance",
-    "#Design",
-    "#Dogs",
-    "#Drawing",
-    "#Education",
-    "#Electronics",
-    "#Entertainment",
-    "#Family",
-    "#Fashion",
-    "#Fitness",
-    "#Food",
-    "#Friends",
-    "#Gaming",
-    "#Gardening",
-    "#Goals",
-    "#Happiness",
-    "#Health",
-    "#Hiking",
-    "#History",
-    "#Home",
-    "#Inspiration",
-    "#Interior",
-    "#Investment",
-    "#Island",
-    "#Journal",
-    "#Journey",
-    "#Kids",
-    "#Landscapes",
-    "#Learning",
-    "#Life",
-    "#Lifestyle",
-    "#Love",
-    "#Luxury",
-    "#Meditation",
-    "#Memories",
-    "#Mindfulness",
-    "#Minimalism",
-    "#Mountains",
-    "#Movies",
-    "#Music",
-    "#Nature",
-    "#Night",
-    "#Ocean",
-    "#Painting",
-    "#Party",
-    "#Pets",
-    "#Photography",
-    "#Plants",
-    "#Poetry",
-    "#Reading",
-    "#Relaxing",
-    "#Roadtrip",
-    "#Science",
-    "#Shopping",
-    "#Skyline",
-    "#Snowboarding",
-    "#Space",
-    "#Sports",
-    "#Startup",
-    "#StreetPhotography",
-    "#Success",
-    "#Sunset",
-    "#Surfing",
-    "#Sustainability",
-    "#Swimming",
-    "#Technology",
-    "#Tennis",
-    "#Theater",
-    "#Travel",
-    "#Trending",
-    "#Universe",
-    "#Vacation",
-    "#Vegan",
-    "#VideoGames",
-    "#Vintage",
-    "#Waterfall",
-    "#Wellness",
-    "#Winter",
-    "#Workout",
-    "#Writing",
-    "#Yoga",
-    "#Zoology",
-  ];
+  // Fetch tags from database and sort them alphabetically
+  useEffect(() => {
+    async function fetchTags() {
+      try {
+        const response = await fetch("/api/getTags");
+        const data = await response.json();
+        if (data.success) {
+          const sortedTags = data.tags.sort((a: string, b: string) => a.localeCompare(b));
+          setAvailableTags(sortedTags);
+        }
+      } catch (error) {
+        console.error("Failed to load tags:", error);
+      }
+    }
+    fetchTags();
+  }, []);
 
-  // Show tags on focus and filter while typing
+  // Show sorted tags on focus and filter while typing
   useEffect(() => {
     if (tagInput.length > 0) {
-      const filteredTags = availableTags.filter(
-        (tag) =>
-          tag.toLowerCase().includes(tagInput.toLowerCase()) &&
-          !userData.selectedTags?.includes(tag) // Hide selected tags from the list if user typed something
-      );
+      const filteredTags = availableTags
+        .filter(
+          (tag) =>
+            tag.toLowerCase().includes(tagInput.toLowerCase()) &&
+            !userData.selectedTags?.includes(tag)
+        )
+        .sort((a, b) => a.localeCompare(b)); // Ensure sorting when filtering
       setSuggestedTags(filteredTags);
     } else {
       setSuggestedTags(
-        availableTags.filter((tag) => !userData.selectedTags?.includes(tag)) // Hide selected tags from the list if user left input empty
+        availableTags
+          .filter((tag) => !userData.selectedTags?.includes(tag))
+          .sort((a, b) => a.localeCompare(b)) // Sort if input is empty
       );
     }
-  }, [tagInput, isFocused, userData.selectedTags]);
+  }, [tagInput, isFocused, userData.selectedTags, availableTags]);
 
   // Add tag to the selected list
   const handleTagSelect = (tag: string) => {
@@ -247,10 +160,6 @@ export default function FirstModal({
 
           {/* Preferred tags */}
           <label htmlFor="tags">❤️ What are your preferred tags?</label>
-          <p className="text-[0.75rem] text-sky-700">
-            There are predefined tags to choose from. You can create a custom
-            one, but using existing tags will help you find posts more easily.
-          </p>
 
           <input
             type="text"
@@ -272,7 +181,7 @@ export default function FirstModal({
 
           {/* List of suggested tags */}
           {isFocused && suggestedTags.length > 0 && (
-            <div className="absolute bottom-0 bg-white border border-sky-400 w-[50%] rounded-lg mt-1 p-2 shadow-lg z-50 max-h-[400px] overflow-y-auto">
+            <div className="absolute bottom-12 bg-white border border-sky-400 w-[50%] rounded-lg mt-1 p-2 shadow-lg z-50 max-h-[300px] overflow-y-auto">
               {suggestedTags.map((tag) => (
                 <div
                   key={tag}

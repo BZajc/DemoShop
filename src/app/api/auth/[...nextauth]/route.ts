@@ -46,7 +46,7 @@ export const authOptions: AuthOptions = {
           id: user.id,
           name: user.name,
           email: user.email,
-          hashtag: user.hashtag ?? undefined
+          hashtag: user.hashtag ?? undefined,
         };
       },
     }),
@@ -126,25 +126,27 @@ export const authOptions: AuthOptions = {
 
     async jwt({ token, user }: { token: any; user?: any }) {
       if (user) {
-          // Fetch hashtag from database if user exists
-          const dbUser = await prisma.user.findUnique({
-              where: { email: user.email },
-              select: { hashtag: true }, 
-          });
+        // Fetch hashtag from database if user exists
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email },
+          select: { id: true, hashtag: true },
+        });
 
-          token.sub = user.id;
-          token.hashtag = dbUser?.hashtag || "";
+        if (dbUser) {
+          token.sub = dbUser.id;
+          token.hashtag = dbUser.hashtag || "";
+        }
       }
       return token;
-  },
+    },
 
-  async session({ session, token }: { session: any; token: any }) {
+    async session({ session, token }: { session: any; token: any }) {
       if (session.user) {
-          session.user.id = token.sub;
-          session.user.hashtag = token.hashtag || "";
+        session.user.id = token.sub;
+        session.user.hashtag = token.hashtag || "";
       }
       return session;
-  },
+    },
   },
 };
 
