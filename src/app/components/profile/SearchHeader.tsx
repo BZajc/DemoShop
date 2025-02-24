@@ -7,7 +7,7 @@ export default function SearchHeader() {
 
   return (
     <form
-      className={`flex items-center rounded-full transition-all duration-300 ${
+      className={`w-[600px] min-w-[250px] flex items-center rounded-full transition-all duration-300 ml-auto ${
         isFocused ? "bg-sky-200" : "bg-stone-200"
       }`}
     >

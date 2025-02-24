@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { UserData } from "./FirstTimeData";
 
 interface SecondModalProps {
@@ -9,7 +10,6 @@ export default function SecondModal({
   userData,
   handleDataChange,
 }: SecondModalProps) {
-
   // Handle file selection
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -17,7 +17,6 @@ export default function SecondModal({
 
       // File format validation
       if (!file.type.startsWith("image/")) {
-        alert("Please upload a valid image file.");
         return;
       }
 
@@ -55,10 +54,12 @@ export default function SecondModal({
       {userData.imageSrc && (
         <div className="mt-4 flex flex-col items-center">
           <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-sky-500 bg-gray-300">
-            <img
+            <Image
               src={userData.imageSrc}
               alt="Profile Preview"
-              className="absolute w-full h-full object-cover cursor-grab active:cursor-grabbing"
+              fill
+              className="object-cover cursor-grab active:cursor-grabbing"
+              sizes="128px"
             />
           </div>
 

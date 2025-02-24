@@ -86,6 +86,8 @@ model Post {
   tags      PostTag[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  @@index([createdAt])
 }
 
 model Tag {
@@ -126,4 +128,6 @@ model PostTag {
   tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([postId, tagId])
+  @@index([postId])
+  @@index([tagId])
 }

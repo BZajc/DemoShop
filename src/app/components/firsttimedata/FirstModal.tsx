@@ -14,7 +14,6 @@ export default function FirstModal({
 }: FirstModalProps) {
   const [tagInput, setTagInput] = useState("");
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [isFocused, setIsFocused] = useState(false); // Control input focus
   const [availableTags, setAvailableTags] = useState<string[]>([]);
@@ -83,30 +82,33 @@ export default function FirstModal({
     if (e.key === "Enter") {
       e.preventDefault();
       if (!tagInput.trim()) return;
-  
+
       // Remove unnecessary "#"
       const cleanedTag = tagInput.trim().replace(/^#+/, "");
-  
+
       if (cleanedTag.length > 20) {
         setErrorMessage("❌ Tag can have a maximum of 20 characters.");
         return;
       }
-  
+
       if (!cleanedTag) {
-        setErrorMessage("❌ The tag must contain at least one valid character.");
+        setErrorMessage(
+          "❌ The tag must contain at least one valid character."
+        );
         return;
       }
-  
+
       // Ensure the tag exists in the available tags list
       const matchingTag = availableTags.find(
-        (tag) => tag.replace(/^#+/, "").toLowerCase() === cleanedTag.toLowerCase()
+        (tag) =>
+          tag.replace(/^#+/, "").toLowerCase() === cleanedTag.toLowerCase()
       );
-  
+
       if (!matchingTag) {
         setErrorMessage("❌ This tag does not exist in the available list.");
         return;
       }
-  
+
       // Add the tag if not already selected
       if (!userData.selectedTags?.includes(matchingTag)) {
         handleDataChange({
@@ -114,14 +116,13 @@ export default function FirstModal({
           selectedTags: [...(userData.selectedTags || []), matchingTag],
         });
       }
-  
+
       // Clear input and reset suggestions
       setTagInput("");
       setSuggestedTags([]);
       setErrorMessage("");
     }
   };
-  
 
   // Remove tag from the list
   const handleTagRemove = (tag: string) => {

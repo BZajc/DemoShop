@@ -2,7 +2,7 @@
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
-import { uploadImage } from "@/lib/cloudinary";
+import { uploadUserProfileImage } from "@/lib/cloudinary";
 
 export async function updateUserData(data: FormData) {
   const session = await getServerSession(authOptions);
@@ -18,19 +18,10 @@ export async function updateUserData(data: FormData) {
 
   let imageUrl = null;
   if (image && image.size > 0) {
-    imageUrl = await uploadImage(image);
+    imageUrl = await uploadUserProfileImage(image);
   }
 
   try {
-    const userExists = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!userExists) {
-      console.error("User not found:", userId);
-      return { success: false, error: "User not found" };
-    }
-
     await Promise.all(
       selectedTags.map(async (tagName: string) => {
         const existingTag = await prisma.tag.findUnique({

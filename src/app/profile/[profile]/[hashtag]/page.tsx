@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { House, Mail, UserPlus, Pencil } from "lucide-react";
+import { House, Mail, User, Pencil, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
@@ -34,7 +34,14 @@ export default async function ProfilePage({
       avatarPhoto: true,
       createdAt: true,
       realName: true,
-      posts: { select: { id: true } },
+      aboutMe: true,
+      posts: {
+        select: {
+          id: true,
+          title: true,
+          imageUrl: true,
+        },
+      },
       following: { select: { followingId: true } },
       followers: { select: { followerId: true } },
       selectedTags: {
@@ -55,67 +62,110 @@ export default async function ProfilePage({
     session?.user?.hashtag === resolvedParams.hashtag;
 
   return (
-    <div>
-      {/* Go back button */}
-      <nav className="bg-sky-600 flex items-center w-full">
-        <div className="max-w-[1600px] w-full flex p-2 mx-auto justify-evenly">
-          <Link
-            href="/feed"
-            className="text-white duration-300 transition-all hover:text-sky-400 p-1 mr-1"
-          >
-            <House size={38} />
-          </Link>
-          <SearchHeader />
-          <div className="flex ml-auto">
-            {ownProfile ? (
-              <>
-                <button className="mx-2 flex items-center p-2 rounded-full bg-stone-200 text-sky-900 transition-all duration-300 hover:bg-sky-200 hover:scale-[1.05]">
-                  <Pencil className="mr-2" />
-                  Edit your profile
-                </button>
-              </>
-            ) : (
-              <>
-                <button className="mx-2 flex items-center p-2 rounded-full bg-stone-200 text-sky-900 transition-all duration-300 hover:bg-sky-200 hover:scale-[1.05]">
-                  <Mail className="mr-2" />
-                  Follow
-                </button>
-                <button className="mx-2 flex items-center p-2 rounded-full bg-stone-200 text-sky-900 transition-all duration-300 hover:bg-sky-200 hover:scale-[1.05]">
-                  <UserPlus className="mr-2" />
-                  Invite to contacts
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      <header className="p-4 mx-auto max-w-[1600px]">
-        <h1 className="text-2xl">
-          {resolvedParams.profile}'s #{resolvedParams.hashtag} Profile
-        </h1>
+    <div className="p-4">
+      <header className="flex items-center mt-4 mb-12 max-w-[1200px] mx-auto">
+        <Link
+          href="/feed"
+          className="p-4 mr-4 duration-300 transition-all hover:scale-[1.05] bg-sky-400 text-white rounded-full border-2 border-sky-400 hover:text-sky-400 hover:bg-white flex items-center justify-center"
+        >
+          <House size={30} />
+        </Link>
+        <SearchHeader />
       </header>
 
-      <section className="max-w-[1600px] flex p-4 mx-auto">
-        <div className="min-w-[140px] h-auto relative">
-          <Image
-            src={user.avatarPhoto || "/images/profileMalePlaceholder.webp"}
-            alt={`${user.name}'s profile picture`}
-            height={140}
-            width={140}
-            className="rounded-full border-4 border-white"
-          />
-        </div>
-        <div className="flex flex-col justify-between">
-          <div>
-            <h2 className="text-3xl">Username: {resolvedParams.profile}</h2>
-            <h2 className="text-xl">Real Name: {user.realName}</h2>
+      <section className="grid grid-cols-2 gap-4 max-w-[1200px] mx-auto h-[800px]">
+        {/* First Column */}
+        <div className="h-full flex flex-col gap-4">
+          {/* Left Top - Profile Info */}
+          <div className="bg-white h-1/2 w-full rounded-3xl shadow-lg p-4 flex flex-col items-center justify-center text-center">
+            {user.avatarPhoto ? (
+              <div className="w-[100px] h-[100px] rounded-full overflow-hidden mb-4">
+                <Image
+                  src={user.avatarPhoto}
+                  alt={`${user.name}'s avatar`}
+                  width={100}
+                  height={100}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+            ) : (
+              <div className="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mb-4">
+                <UserPlus size={48} className="text-gray-500" />
+              </div>
+            )}
+            <h1 className="text-2xl font-bold">{user.name}</h1>
+            <p className="text-gray-500">#{user.hashtag}</p>
+            {user.realName && (
+              <p className="text-gray-700 italic">{user.realName}</p>
+            )}
           </div>
-          <div className="flex items-center">
-            <div className="flex flex-wrap gap-2 mt-2">
-              <TagsAsButtons selectedTags={user.selectedTags} />
+
+          {/* Left Bottom - Actions and Stats */}
+          <div className="bg-white h-1/2 w-full rounded-3xl shadow-lg p-4">
+            <h2 className="text-lg font-semibold mb-2">Profile Information</h2>
+            <p className="text-gray-500">
+              Joined: {new Date(user.createdAt).toLocaleDateString()}
+            </p>
+            <p className="text-gray-500">Followers: {user.followers.length}</p>
+            <p className="text-gray-500">Following: {user.following.length}</p>
+            <p className="text-gray-500">About Me: {user.aboutMe}</p>
+            <div className="mt-4 flex gap-2">
+              {ownProfile ? (
+                <button className="bg-sky-500 text-white px-4 py-2 rounded-full hover:bg-sky-700 transition flex items-center">
+                  <Pencil size={16} className="mr-2" />
+                  Edit Profile
+                </button>
+              ) : (
+                <>
+                  <button className="bg-gray-200 px-4 py-2 rounded-full hover:bg-gray-300 transition">
+                    <UserPlus size={16} />
+                    Add to Contacts
+                  </button>
+                  <button className="bg-gray-200 px-4 py-2 rounded-full hover:bg-gray-300 transition">
+                    <Mail size={16} />
+                    Message
+                  </button>
+                </>
+              )}
             </div>
           </div>
+        </div>
+
+        {/* Second Column */}
+        <div className="h-full flex flex-col gap-4">
+          {/* Right Top - Tags */}
+          <div className="bg-white h-1/2 w-full rounded-3xl shadow-lg p-4 overflow-y-auto">
+            <h2 className="text-lg font-semibold mb-2">Interests</h2>
+            <TagsAsButtons selectedTags={user.selectedTags} />
+          </div>
+
+{/* Right Bottom - Posts */}
+<div className="bg-white h-1/2 w-full rounded-3xl shadow-lg p-4 overflow-y-auto custom-scrollbar scrollbar-gutter-stable">
+  <h2 className="text-lg font-semibold mb-2">Published Pictures</h2>
+  {user.posts.length > 0 ? (
+    <div className="grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4">
+      {user.posts.map((post) => (
+        <Link
+          key={post.id}
+          href={`/post/${post.id}`}
+          className="block relative overflow-hidden rounded-lg shadow-md"
+        >
+          <div className="w-full max-w-[150px] aspect-square">
+            <Image
+              src={post.imageUrl}
+              alt={post.title}
+              fill
+              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105 rounded-lg"
+            />
+          </div>
+        </Link>
+      ))}
+    </div>
+  ) : (
+    <p className="text-gray-500">No posts yet.</p>
+  )}
+</div>
+
         </div>
       </section>
     </div>
