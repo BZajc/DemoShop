@@ -1,13 +1,46 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import Link from "next/link";
+import { useEffect, useState, useRef } from "react";
+import { getRecentlyVisited } from "@/app/api/actions/getRecentlyVisited";
+
+interface User {
+  id: string;
+  name: string;
+  realName?: string | null;
+  avatarPhoto?: string | null;
+  hashtag: string | null;
+}
 
 export default function ActivityPanel() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+
+  // Lista ostatnio odwiedzonych
+  const [recentlyVisited, setRecentlyVisited] = useState<User[]>([]);
+
+  // Lista online (Placeholder na później)
+  const [onlineUsers, setOnlineUsers] = useState<User[]>([]);
+
+  // Aktywna lista (Recently Visited lub Online)
+  const [activeList, setActiveList] = useState<"recentlyVisited" | "online">("recentlyVisited");
+
+  // Pobierz ostatnio odwiedzonych użytkowników
+  useEffect(() => {
+    async function fetchRecentlyVisited() {
+      const users = await getRecentlyVisited();
+      setRecentlyVisited(users);
+    }
+    fetchRecentlyVisited();
+  }, []);
+
+  // Handler zmieniający aktywną listę
+  const handleListChange = (listType: "recentlyVisited" | "online") => {
+    setActiveList(listType);
+  };
 
   //  Scroll by using mouse button
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -16,6 +49,7 @@ export default function ActivityPanel() {
     setStartX(e.pageX - scrollRef.current.offsetLeft);
     setScrollLeft(scrollRef.current.scrollLeft);
   };
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDragging || !scrollRef.current) return;
     e.preventDefault();
@@ -23,23 +57,35 @@ export default function ActivityPanel() {
     const walk = (x - startX) * 1;
     scrollRef.current.scrollLeft = scrollLeft - walk;
   };
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
+
+  const handleMouseUp = () => setIsDragging(false);
 
   return (
     <div className="flex flex-col m-4 mt-12 select-none">
       <div className="flex">
-        <button className="bg-sky-200 p-2 px-4 rounded-full text-sky-900 transition-all duration-300 hover:text-white hover:bg-sky-400">
+        {/* Online Button */}
+        <button
+          onClick={() => handleListChange("online")}
+          className={`p-2 px-4 rounded-full text-sky-900 transition-all duration-300 hover:text-white hover:bg-sky-400 
+            ${activeList === "online" ? "bg-sky-400 text-white" : "bg-stone-200"}`}
+        >
           Online 25
         </button>
-        <button className="bg-stone-200 p-2 px-4 ml-4 rounded-full text-sky-900 transition-all duration-300 hover:text-white hover:bg-sky-400">
+
+        {/* Recently Visited Button */}
+        <button
+          onClick={() => handleListChange("recentlyVisited")}
+          className={`p-2 px-4 ml-4 rounded-full text-sky-900 transition-all duration-300 hover:text-white hover:bg-sky-400 
+            ${activeList === "recentlyVisited" ? "bg-sky-400 text-white" : "bg-stone-200"}`}
+        >
           Recently Visited
         </button>
       </div>
+
       <p className="text-sky-900 text-sm p-1">
         You can also double-click one of the buttons above to show all users.
       </p>
+
       <div
         ref={scrollRef}
         onMouseDown={handleMouseDown}
@@ -48,27 +94,33 @@ export default function ActivityPanel() {
         onMouseUp={handleMouseUp}
         className="flex items-center gap-12 py-8 px-4 justify-start cursor-grab active:cursor-grabbing overflow-x-auto overflow-y-hidden custom-scrollbar scrollbar-gutter-stable"
       >
-        {[1, 2, 3, 4, 5].map((num) => (
-          <button key={num} className="flex flex-col items-center relative transition-all duration-300 hover:scale-[1.1]">
-            <div className="w-[50px] h-[50px] rounded-full overflow-hidden">
-              <Image
-                src={`/images/loremPicture1.jpg`}
-                alt="User Profile"
-                fill
-                className="object-cover rounded-full border-2 border-white"
-              />
-            </div>
-            <p className="text-sm text-sky-900 mt-2 absolute top-10 whitespace-nowrap">
-              {`User TEST TEST TEST ${num}`.length > 12
-                ? `User TEST ${num}`.slice(0, 12) + "..."
-                : `User TEST ${num}`}
-            </p>
-          </button>
-        ))}
-        <button className="flex-shrink-0 p-2 px-4 rounded-full bg-sky-200 hover:bg-sky-400 hover:text-white transition-colors duration-300 text-sky-900">
-          Show all Online
-        </button>
-
+        {/* Renderowanie listy użytkowników */}
+        {activeList === "recentlyVisited" ? (
+          recentlyVisited.length > 0 ? (
+            recentlyVisited.map((user) => (
+              <Link
+                key={user.id}
+                href={`/profile/${user.name}/${user.hashtag}`}
+                className="flex flex-col items-center relative transition-all duration-300 hover:scale-[1.1]"
+              >
+                <div className="w-[50px] h-[50px] rounded-full overflow-hidden">
+                  <Image
+                    src={user.avatarPhoto || "/images/avatarPlaceholder.png"}
+                    alt={`${user.name}'s avatar`}
+                    width={50}
+                    height={50}
+                    className="object-cover rounded-full border-2 border-white"
+                  />
+                </div>
+                <p className="text-sm text-sky-900 mt-2">{user.name}</p>
+              </Link>
+            ))
+          ) : (
+            <p className="text-sm text-sky-900">No recently visited users</p>
+          )
+        ) : (
+          <p className="text-sm text-sky-900">No online users</p>
+        )}
       </div>
     </div>
   );

@@ -4,7 +4,8 @@ import FirstModal from "./FirstModal";
 import SecondModal from "./SecondModal";
 import ThirdModal from "./ThirdModal";
 import { updateUserData } from "@/app/api/actions/updateUserData";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export interface UserData {
   name?: string;
@@ -23,6 +24,8 @@ export default function FirstTimeData() {
   });
   const [isVisible, setIsVisible] = useState(true);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter()
 
   const handleDataChange = (newData: UserData) => {
     setUserData((prev) => ({ ...prev, ...newData }));
@@ -42,6 +45,38 @@ export default function FirstTimeData() {
   }, [isVisible]);
 
   if (!isVisible) return null;
+
+  async function handleSubmit() {
+    if (step === 3) {
+      setIsSubmitting(true);
+
+      const formData = new FormData();
+      formData.append("name", userData.name || "");
+      formData.append("aboutMe", userData.aboutMe || "");
+      formData.append("selectedTags", JSON.stringify(userData.selectedTags));
+
+      if (userData.imageSrc) {
+        const imageFile = await fetch(userData.imageSrc).then((res) =>
+          res.blob()
+        );
+        formData.append("image", imageFile, "avatar.jpg");
+      }
+
+      const response = await updateUserData(formData);
+
+      if (response.success) {
+        setIsVisible(false);
+        console.log("User data updated successfully!", response.user);
+        router.push(`/profile/${response?.user?.name}/${response?.user?.hashtag}`);
+      } else {
+        console.error("Failed to update user data:", response.error);
+      }
+
+      setIsSubmitting(false);
+    } else {
+      setStep(step + 1);
+    }
+  }
 
   return (
     <section
@@ -90,7 +125,10 @@ export default function FirstTimeData() {
           {step > 1 && (
             <button
               onClick={() => setStep(step - 1)}
-              className="bg-gray-300 rounded-full py-2 px-4 duration-300 transition-all text-gray-900 hover:text-white hover:bg-gray-500 hover:scale-[1.05]"
+              disabled={isSubmitting}
+              className={`bg-gray-300 rounded-full py-2 px-4 duration-300 transition-all text-gray-900 hover:text-white hover:bg-gray-500 hover:scale-[1.05] ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
               Back
             </button>
@@ -98,40 +136,19 @@ export default function FirstTimeData() {
 
           {/* Continue and Submit button */}
           <button
-            onClick={async () => {
-              if (step === 3) {
-                console.log("Form submitted!", userData);
-
-                const formData = new FormData();
-                formData.append("name", userData.name || "");
-                formData.append("aboutMe", userData.aboutMe || "");
-                formData.append(
-                  "selectedTags",
-                  JSON.stringify(userData.selectedTags)
-                );
-
-                if (userData.imageSrc) {
-                  const imageFile = await fetch(userData.imageSrc).then((res) =>
-                    res.blob()
-                  );
-                  formData.append("image", imageFile, "avatar.jpg");
-                }
-
-                const response = await updateUserData(formData);
-
-                if (response.success) {
-                  setIsVisible(false);
-                  console.log("User data updated successfully!", response.user);
-                } else {
-                  console.error("Failed to update user data:", response.error);
-                }
-              } else {
-                setStep(step + 1);
-              }
-            }}
-            className="ml-auto bg-sky-200 rounded-full py-2 px-4 duration-300 transition-all text-sky-900 hover:text-white hover:bg-sky-400 hover:scale-[1.05]"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className={`ml-auto bg-sky-200 rounded-full py-2 px-4 duration-300 transition-all text-sky-900 hover:text-white hover:bg-sky-400 hover:scale-[1.05] ${
+              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            {step === 3 ? "Submit" : "Continue"}
+            {isSubmitting ? (
+              <Loader2 className="animate-spin" size={24} />
+            ) : step === 3 ? (
+              "Submit"
+            ) : (
+              "Continue"
+            )}
           </button>
         </div>
       </div>

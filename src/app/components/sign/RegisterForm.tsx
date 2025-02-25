@@ -14,7 +14,7 @@ export default function RegisterForm({ handleFormChange }: RegisterFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const router = useRouter();
 
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

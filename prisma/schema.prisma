@@ -59,7 +59,12 @@ model User {
   following       Follows[] @relation("Following")
   followers       Follows[] @relation("Followers")
 
+  visitedProfiles RecentlyVisitedUsers[] @relation("Visitor")
+  visitedBy       RecentlyVisitedUsers[] @relation("Visited")
+
   @@unique([name, hashtag])
+  SuggestedTags SuggestedTags[]
+  PostReactions PostReactions[]
 }
 
 model Follows {
@@ -78,16 +83,28 @@ model Post {
   id        String    @id @default(uuid())
   title     String
   imageUrl  String
-  likes     Int       @default(0)
-  dislikes  Int       @default(0)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   comments  Comment[]
   tags      PostTag[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  reactions   PostReactions[]
 
   @@index([createdAt])
+}
+
+model PostReactions {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  reaction  String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
 }
 
 model Tag {
@@ -95,6 +112,8 @@ model Tag {
   name      String @unique
   userTags  UserTag[]
   postTags  PostTag[]
+
+  SuggestedTags SuggestedTags[]
 }
 
 model Comment {
@@ -130,4 +149,29 @@ model PostTag {
   @@id([postId, tagId])
   @@index([postId])
   @@index([tagId])
+}
+
+model SuggestedTags {
+  id          String   @id @default(uuid())
+  userId      String
+  tagId       String
+  count       Float    @default(0)
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tag         Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tagId])
+}
+
+model RecentlyVisitedUsers {
+  id          String   @id @default(uuid())
+  visitorId   String
+  visitedId   String
+  visitedAt   DateTime @default(now())
+
+  visitor     User     @relation("Visitor", fields: [visitorId], references: [id], onDelete: Cascade)
+  visited     User     @relation("Visited", fields: [visitedId], references: [id], onDelete: Cascade)
+
+  @@index([visitorId, visitedAt])
+  @@index([visitedId, visitedAt])
 }

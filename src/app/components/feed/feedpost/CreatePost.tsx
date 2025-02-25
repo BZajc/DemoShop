@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { X, UploadCloud } from "lucide-react";
+import { X, UploadCloud, Loader2 } from "lucide-react";
 import { createPost } from "@/app/api/actions/createPost";
 
 interface CreatePostProps {
@@ -28,6 +28,7 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
     tags: "",
     image: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch tags from database and sort them alphabetically
   useEffect(() => {
@@ -174,27 +175,32 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
 
   const handlePublish = async () => {
     if (validatePost()) {
+      setIsSubmitting(true);
+
       // Create formData
       const formData = new FormData();
       formData.append("title", title);
       formData.append("tags", JSON.stringify(selectedTags));
-  
+
       // Check if image is added
-      const imageFileInput = document.getElementById("file-upload") as HTMLInputElement;
+      const imageFileInput = document.getElementById(
+        "file-upload"
+      ) as HTMLInputElement;
       const file = imageFileInput?.files?.[0] ?? null;
       if (file) {
         formData.append("image", file);
       } else {
         setErrors((prevErrors) => ({
           ...prevErrors,
-          image: "Please upload an image."
+          image: "Please upload an image.",
         }));
+        setIsSubmitting(false);
         return;
       }
-  
+
       try {
         const result = await createPost(formData);
-  
+
         if (result.success) {
           console.log("Post created successfully:", result.post);
           setShowAddPost(false);
@@ -204,10 +210,10 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
       } catch (error) {
         console.error("Error creating post:", error);
       }
+
+      setIsSubmitting(false); // Stop loader after submission
     }
   };
-
-  
 
   return (
     <div
@@ -227,15 +233,19 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
         >
           <X size={20} />
         </button>
-  
+
         <h2 className="text-xl font-bold mb-4">Create a new post</h2>
-  
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          handlePublish();
-        }}>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handlePublish();
+          }}
+        >
           {/* Title Input */}
-          <label htmlFor="title" className="block text-sm font-medium">Title</label>
+          <label htmlFor="title" className="block text-sm font-medium">
+            Title
+          </label>
           <input
             id="title"
             name="title"
@@ -245,10 +255,14 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
-          {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
-  
+          {errors.title && (
+            <p className="text-red-500 text-sm">{errors.title}</p>
+          )}
+
           {/* Tags Input */}
-          <label htmlFor="tags" className="block text-sm font-medium">Tags</label>
+          <label htmlFor="tags" className="block text-sm font-medium">
+            Tags
+          </label>
           <input
             id="tags"
             name="tags"
@@ -262,7 +276,7 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
             className="w-full p-2 border rounded mb-4"
           />
           {errors.tags && <p className="text-red-500 text-sm">{errors.tags}</p>}
-  
+
           {/* List of suggested tags */}
           {isFocused && suggestedTags.length > 0 && (
             <ul className="custom-scrollbar scrollbar-gutter-stable select-none absolute right-0 bg-white border border-sky-400 rounded-md mt-1 p-2 shadow-lg z-50 max-h-60 w-full overflow-y-auto">
@@ -277,7 +291,7 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
               ))}
             </ul>
           )}
-  
+
           {/* List of chosen tags */}
           <div className="mt-4 mb-12 flex flex-wrap gap-2">
             {selectedTags.map((tag) => (
@@ -290,9 +304,14 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
               </span>
             ))}
           </div>
-  
+
           {/* Image Upload - Drag & Drop Area */}
-          <label htmlFor="file-upload" className="block text-sm font-medium mb-2">Upload Image</label>
+          <label
+            htmlFor="file-upload"
+            className="block text-sm font-medium mb-2"
+          >
+            Upload Image
+          </label>
           <div
             className={`flex flex-col items-center justify-center border-2 border-dashed p-6 rounded-lg cursor-pointer transition ${
               isDragging
@@ -323,8 +342,10 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
               <span className="text-gray-600 text-sm">Max image size 2mb</span>
             </label>
           </div>
-          {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
-  
+          {errors.image && (
+            <p className="text-red-500 text-sm">{errors.image}</p>
+          )}
+
           {/* Image Preview */}
           {imagePreview && (
             <div className="mt-4 relative">
@@ -341,17 +362,23 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
               </button>
             </div>
           )}
-  
           {/* Submit Button */}
           <button
             type="submit"
-            className="bg-sky-500 text-white p-2 rounded w-full mt-4 hover:bg-sky-700 transition"
+            disabled={isSubmitting}
+            className={`bg-sky-500 text-white p-2 rounded w-full mt-4 hover:bg-sky-700 transition ${
+              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            Publish
+            {isSubmitting ? (
+              <Loader2 className="animate-spin mx-auto" size={24} />
+            ) : (
+              "Publish"
+            )}
           </button>
         </form>
       </div>
-  
+
       {/* Confirm Popup to close modal */}
       {showConfirmPopup && (
         <div className="fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-[1000]">
@@ -362,7 +389,7 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
             <p className="text-sm text-gray-600 mt-2">
               Your changes will not be saved if you close now.
             </p>
-  
+
             <div className="flex justify-center gap-4 mt-4">
               <button
                 className="bg-gray-300 text-gray-900 py-2 px-4 rounded-full transition hover:bg-gray-400"
@@ -370,7 +397,7 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
               >
                 No, go back
               </button>
-  
+
               <button
                 className="bg-red-500 text-white py-2 px-4 rounded-full transition hover:bg-red-600"
                 onClick={() => setShowAddPost(false)}
@@ -383,5 +410,4 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
       )}
     </div>
   );
-  
 }

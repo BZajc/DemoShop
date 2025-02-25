@@ -1,11 +1,31 @@
-import { EllipsisVertical, Star, ThumbsUp, ThumbsDown } from "lucide-react";
+import {
+  EllipsisVertical,
+  Star,
+  User,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import FeedCommentsCounter from "./FeedCommentsCounter";
 import FeedCommentInput from "./FeedCommentInput";
+import { Post } from "@/types/Post";
+import ReactionButtons from "./ReactionButtons";
 
-export default function FeedPost() {
-  const imageUrl = "/images/loremPicture4.jpg";
+interface FeedPostProps {
+  post: Post;
+}
+
+export default function FeedPost({ post }: FeedPostProps) {
+  const { id, imageUrl, title, user, tags, createdAt, reactions } = post;
+  const formattedDate = new Date(createdAt).toLocaleString();
+
+  // Calculate likes and dislikes
+  const likes = reactions.filter((r) => r.reaction === "like").length;
+  const dislikes = reactions.filter((r) => r.reaction === "dislike").length;
+
+  // Calculate average rating
+  const totalReactions = likes + dislikes;
+  const likePercentage =
+    totalReactions > 0 ? Math.round((likes / totalReactions) * 100) : 0;
 
   return (
     <div
@@ -24,7 +44,7 @@ export default function FeedPost() {
         {/* Post Header */}
         <div className="flex justify-between">
           <div className="flex items-center text-sm">
-            <p>Published 01.01.25 at 17:28</p>
+            <p>Published {formattedDate}</p>
             <p className="mx-2">·</p>
             <button className="hover:text-sky-400 transition-all duration-300">
               Follow
@@ -39,23 +59,29 @@ export default function FeedPost() {
         <div className="flex mt-4 items-center">
           <Link
             className="w-[40px] h-[40px] overflow-hidden rounded-full hover:scale-[1.1] transition-all duration-300 relative"
-            href={""}
+            href={`/profile/${user.name}/${user.hashtag}`}
           >
-            <Image
-              src={imageUrl}
-              fill
-              className="object-cover"
-              alt="temporary alt"
-            />
+            {user.avatarPhoto ? (
+              <Image
+                src={user.avatarPhoto}
+                fill
+                className="object-cover"
+                alt={`${user.name} avatar`}
+              />
+            ) : (
+              <div className="w-[40px] h-[40px] rounded-full bg-gray-300 flex items-center justify-center">
+                <User size={24} className="text-gray-500" />
+              </div>
+            )}
           </Link>
           <div className="ml-4 text-sm">
             <Link
-              href={""}
+              href={`/profile/${user.name}/${user.hashtag}`}
               className="duration-300 transition-all hover:text-sky-400"
             >
-              @PicbookNickname
+              <p>@{user.name}</p>
             </Link>
-            <p>John Doe</p>
+            <p className="italic">{user.realName || ""}</p>
           </div>
         </div>
 
@@ -63,36 +89,15 @@ export default function FeedPost() {
 
         {/* Tags */}
         <div className="flex gap-2 ml-4">
-          <Link
-            href={""}
-            className="duration-300 transition-all hover:text-sky-400"
-          >
-            #Sun
-          </Link>
-          <Link
-            href={""}
-            className="duration-300 transition-all hover:text-sky-400"
-          >
-            #Nature
-          </Link>
-          <Link
-            href={""}
-            className="duration-300 transition-all hover:text-sky-400"
-          >
-            #Sunshafts
-          </Link>
-          <Link
-            href={""}
-            className="duration-300 transition-all hover:text-sky-400"
-          >
-            #Yellow
-          </Link>
-          <Link
-            href={""}
-            className="duration-300 transition-all hover:text-sky-400"
-          >
-            #Water
-          </Link>
+          {tags.map(({ tag }) => (
+            <Link
+              key={tag.name}
+              href={`/tag/${tag.name}`}
+              className="duration-300 transition-all hover:text-sky-400"
+            >
+              {tag.name}
+            </Link>
+          ))}
         </div>
 
         {/* Post Picture */}
@@ -101,7 +106,7 @@ export default function FeedPost() {
             src={imageUrl}
             fill
             className="object-cover rounded-lg"
-            alt="temporary alt"
+            alt={`${title}`}
           />
         </div>
 
@@ -109,14 +114,14 @@ export default function FeedPost() {
         <div className="flex m-2 justify-between items-center">
           <div className="flex m-2 items-center">
             <p className="flex mr-4">
-              87.50% <Star className="ml-1" />
+              {likePercentage}% <Star className="ml-1" />
             </p>
-            <button className="flex p-1 duration-300 transition-all hover:text-sky-400">
-              7 <ThumbsUp className="mx-1" />
-            </button>
-            <button className="flex p-1 ml-2 duration-300 transition-all hover:text-sky-400">
-              1 <ThumbsDown className="mx-1" />
-            </button>
+            <ReactionButtons 
+              postId={id} 
+              likes={likes} 
+              dislikes={dislikes} 
+              reactions={reactions} 
+            />
           </div>
 
           {/* Show comments button and comments counter */}

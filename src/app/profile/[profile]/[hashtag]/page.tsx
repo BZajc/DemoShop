@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import SearchHeader from "@/app/components/profile/SearchHeader";
 import Image from "next/image";
 import TagsAsButtons from "@/app/components/profile/TagsAsButtons";
+import { addRecentlyVisited } from "@/app/api/actions/addRecentlyVisited";
 
 export default async function ProfilePage({
   params,
@@ -29,6 +30,7 @@ export default async function ProfilePage({
       },
     },
     select: {
+      id: true,
       name: true,
       hashtag: true,
       avatarPhoto: true,
@@ -54,6 +56,9 @@ export default async function ProfilePage({
     return notFound();
   }
 
+  // Add profile to recently visited
+  await addRecentlyVisited(user.id);
+
   const session = await auth();
 
   // Check if user is visiting his own profile
@@ -62,7 +67,7 @@ export default async function ProfilePage({
     session?.user?.hashtag === resolvedParams.hashtag;
 
   return (
-    <div className="p-4">
+    <div className="p-4 animate-fade-in">
       <header className="flex items-center mt-4 mb-12 max-w-[1200px] mx-auto">
         <Link
           href="/feed"
@@ -81,7 +86,7 @@ export default async function ProfilePage({
             {user.avatarPhoto ? (
               <div className="w-[100px] h-[100px] rounded-full overflow-hidden mb-4">
                 <Image
-                  src={user.avatarPhoto}
+                  src={user.avatarPhoto || "/images/avatarPlaceholder.png"}
                   alt={`${user.name}'s avatar`}
                   width={100}
                   height={100}
@@ -90,7 +95,7 @@ export default async function ProfilePage({
               </div>
             ) : (
               <div className="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mb-4">
-                <UserPlus size={48} className="text-gray-500" />
+                <User size={48} className="text-gray-500" />
               </div>
             )}
             <h1 className="text-2xl font-bold">{user.name}</h1>
@@ -117,12 +122,12 @@ export default async function ProfilePage({
                 </button>
               ) : (
                 <>
-                  <button className="bg-gray-200 px-4 py-2 rounded-full hover:bg-gray-300 transition">
-                    <UserPlus size={16} />
+                  <button className="bg-gray-200 px-4 py-2 rounded-full hover:bg-gray-300 transition flex items-center">
+                    <UserPlus size={16} className="mr-2"/>
                     Add to Contacts
                   </button>
-                  <button className="bg-gray-200 px-4 py-2 rounded-full hover:bg-gray-300 transition">
-                    <Mail size={16} />
+                  <button className="bg-gray-200 px-4 py-2 rounded-full hover:bg-gray-300 transition flex items-center">
+                    <Mail size={16} className="mr-2"/>
                     Message
                   </button>
                 </>
@@ -139,33 +144,32 @@ export default async function ProfilePage({
             <TagsAsButtons selectedTags={user.selectedTags} />
           </div>
 
-{/* Right Bottom - Posts */}
-<div className="bg-white h-1/2 w-full rounded-3xl shadow-lg p-4 overflow-y-auto custom-scrollbar scrollbar-gutter-stable">
-  <h2 className="text-lg font-semibold mb-2">Published Pictures</h2>
-  {user.posts.length > 0 ? (
-    <div className="grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4">
-      {user.posts.map((post) => (
-        <Link
-          key={post.id}
-          href={`/post/${post.id}`}
-          className="block relative overflow-hidden rounded-lg shadow-md"
-        >
-          <div className="w-full max-w-[150px] aspect-square">
-            <Image
-              src={post.imageUrl}
-              alt={post.title}
-              fill
-              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105 rounded-lg"
-            />
+          {/* Right Bottom - Posts */}
+          <div className="bg-white h-1/2 w-full rounded-3xl shadow-lg p-4 overflow-y-auto custom-scrollbar scrollbar-gutter-stable">
+            <h2 className="text-lg font-semibold mb-2">Published Pictures</h2>
+            {user.posts.length > 0 ? (
+              <div className="grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4">
+                {user.posts.map((post) => (
+                  <Link
+                    key={post.id}
+                    href={`/post/${post.id}`}
+                    className="block relative overflow-hidden rounded-lg shadow-md"
+                  >
+                    <div className="w-full max-w-[150px] aspect-square">
+                      <Image
+                        src={post.imageUrl}
+                        alt={post.title}
+                        fill
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105 rounded-lg"
+                      />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">No posts yet.</p>
+            )}
           </div>
-        </Link>
-      ))}
-    </div>
-  ) : (
-    <p className="text-gray-500">No posts yet.</p>
-  )}
-</div>
-
         </div>
       </section>
     </div>
