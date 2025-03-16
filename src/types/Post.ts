@@ -2,7 +2,7 @@ export interface Reaction {
   id: string;
   userId: string;
   postId: string;
-  reaction: "like" | "dislike";
+  reaction: string;
   createdAt: Date;
 }
 

@@ -39,33 +39,31 @@ export default function FirstModal({
 
   // Show sorted tags on focus and filter while typing
   useEffect(() => {
-    if (tagInput.trim().length > 0) {
-      // Remove leading '#' characters from user input
-      const cleanedInput = tagInput.trim().replace(/^#+/, "");
-
-      const filteredTags = availableTags
-        .filter(
-          (tag) =>
-            // Remove leading '#' from available tags and check if they start with the cleaned input
-            tag
-              .replace(/^#+/, "")
-              .toLowerCase()
-              .startsWith(cleanedInput.toLowerCase()) &&
-            // Ensure the tag is not already selected by the user
-            !userData.selectedTags?.includes(tag)
-        )
-        // Sort the filtered tags alphabetically
-        .sort((a, b) => a.localeCompare(b));
-      setSuggestedTags(filteredTags);
-    } else {
-      // If input is empty show all available tags (excluding selected ones) sorted alphabetically
-      setSuggestedTags(
-        availableTags
-          .filter((tag) => !userData.selectedTags?.includes(tag))
-          .sort((a, b) => a.localeCompare(b))
-      );
+    const cleanedInput = tagInput.trim().replace(/^#+/, ""); // Remove "#" from input
+  
+    if (cleanedInput.length === 0) {
+      setSuggestedTags([]); // Do not fetch for data if input is empty
+      return;
     }
-  }, [tagInput, isFocused, userData.selectedTags, availableTags]);
+  
+    const fetchTags = async () => {
+      try {
+        const response = await fetch(`/api/getTags?query=${encodeURIComponent(cleanedInput)}`);
+        const data = await response.json();
+        if (data.success) {
+          setSuggestedTags(data.tags);
+        }
+      } catch (error) {
+        console.error("Failed to fetch tags:", error);
+      }
+    };
+  
+    const delayDebounce = setTimeout(fetchTags, 300); // Delay fetch by 300ms
+  
+    return () => clearTimeout(delayDebounce);
+  }, [tagInput]);
+  
+  
 
   // Add tag to the selected list
   const handleTagSelect = (tag: string) => {
