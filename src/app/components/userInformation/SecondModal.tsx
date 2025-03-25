@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { UserData } from "./FirstTimeData";
+import { UserData } from "./UserInformation";
 
 interface SecondModalProps {
   userData: UserData;

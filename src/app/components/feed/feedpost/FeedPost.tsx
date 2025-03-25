@@ -1,8 +1,4 @@
-import {
-  EllipsisVertical,
-  Star,
-  User,
-} from "lucide-react";
+import { EllipsisVertical, Star, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import FeedCommentsCounter from "./FeedCommentsCounter";
@@ -102,12 +98,14 @@ export default function FeedPost({ post }: FeedPostProps) {
 
         {/* Post Picture */}
         <div className="relative w-full h-[300px] mt-4">
-          <Image
-            src={imageUrl}
-            fill
-            className="object-cover rounded-lg"
-            alt={`${title}`}
-          />
+          <Link href={`post/${post.id}`}>
+            <Image
+              src={imageUrl}
+              fill
+              className="object-cover rounded-lg"
+              alt={`${title}`}
+            />
+          </Link>
         </div>
 
         {/* Post Rating */}
@@ -116,18 +114,21 @@ export default function FeedPost({ post }: FeedPostProps) {
             <p className="flex mr-4">
               {likePercentage}% <Star className="ml-1" />
             </p>
-            <ReactionButtons 
-              postId={id} 
-              likes={likes} 
-              dislikes={dislikes} 
-              reactions={reactions} 
+            <ReactionButtons
+              postId={id}
+              likes={likes}
+              dislikes={dislikes}
+              reactions={reactions}
             />
           </div>
 
           {/* Show comments button and comments counter */}
-          <FeedCommentsCounter />
+          <Link href={`post/${post.id}`}>
+            <FeedCommentsCounter postId={id} />
+          </Link>
+          
         </div>
-        <FeedCommentInput />
+        <FeedCommentInput postId={id} />
       </div>
     </div>
   );

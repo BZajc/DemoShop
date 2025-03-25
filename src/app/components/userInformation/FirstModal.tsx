@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { UserData } from "./FirstTimeData";
+import { UserData } from "./UserInformation";
 import { X } from "lucide-react";
 
 interface FirstModalProps {
@@ -40,15 +40,17 @@ export default function FirstModal({
   // Show sorted tags on focus and filter while typing
   useEffect(() => {
     const cleanedInput = tagInput.trim().replace(/^#+/, ""); // Remove "#" from input
-  
+
     if (cleanedInput.length === 0) {
       setSuggestedTags([]); // Do not fetch for data if input is empty
       return;
     }
-  
+
     const fetchTags = async () => {
       try {
-        const response = await fetch(`/api/getTags?query=${encodeURIComponent(cleanedInput)}`);
+        const response = await fetch(
+          `/api/getTags?query=${encodeURIComponent(cleanedInput)}`
+        );
         const data = await response.json();
         if (data.success) {
           setSuggestedTags(data.tags);
@@ -57,13 +59,11 @@ export default function FirstModal({
         console.error("Failed to fetch tags:", error);
       }
     };
-  
-    const delayDebounce = setTimeout(fetchTags, 300); // Delay fetch by 300ms
-  
+
+    const delayDebounce = setTimeout(fetchTags, 200); // Delay fetch by 200ms
+
     return () => clearTimeout(delayDebounce);
   }, [tagInput]);
-  
-  
 
   // Add tag to the selected list
   const handleTagSelect = (tag: string) => {
@@ -132,12 +132,10 @@ export default function FirstModal({
 
   return (
     <>
-      <h2 className="text-xl text-sky-950">
-        Hey, it looks like you're visiting Picbook for the first time!
-      </h2>
+      <h2 className="text-xl text-sky-950">Customize your Picbook profile</h2>
       <p>
-        Start by personalizing your preferences and providing some basic
-        information about yourself and your interests.
+        Personalize your preferences and provide some basic information about
+        yourself and your interests.
       </p>
 
       <div className="w-full mt-4">

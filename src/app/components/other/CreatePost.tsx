@@ -7,12 +7,6 @@ interface CreatePostProps {
   setShowAddPost: (value: boolean) => void;
 }
 
-interface PostData {
-  title: string;
-  tags: string[];
-  imageSrc: string | null;
-}
-
 export default function CreatePost({ setShowAddPost }: CreatePostProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -234,7 +228,7 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
           <X size={20} />
         </button>
 
-        <h2 className="text-xl font-bold mb-4">Create a new post</h2>
+        <h2 className="text-xl font-bold mb-4 text-black">Create a new post</h2>
 
         <form
           onSubmit={(e) => {

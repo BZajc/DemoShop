@@ -39,9 +39,11 @@ export default function ActiveLink({ href, label, iconName }: ActiveLinkProps) {
           : "text-sky-200 hover:text-white hover:bg-sky-700 hover:scale-105"
       }`}
     >
-      <Link href={href} className="absolute inset-0 w-full h-full" />
-      <IconComponent className="mr-2 z-10" strokeWidth={1.5} />
-      <span className="z-10 select-none">{label}</span>
+      <Link href={href} className="flex items-center w-full h-full">
+        <IconComponent className="mr-2" strokeWidth={1.5} />
+        <span className="select-none">{label}</span>
+      </Link>
     </li>
   );
 }
+

@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { House, Mail, User, Pencil, UserPlus } from "lucide-react";
+import { House, Mail, User, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
@@ -7,6 +7,8 @@ import SearchHeader from "@/app/components/profile/SearchHeader";
 import Image from "next/image";
 import TagsAsButtons from "@/app/components/profile/TagsAsButtons";
 import { addRecentlyVisited } from "@/app/api/actions/addRecentlyVisited";
+import UserPosts from "@/app/components/profile/UserPosts";
+import EditProfileModalLauncher from "@/app/components/profile/EditProfileModalLauncher";
 
 export default async function ProfilePage({
   params,
@@ -116,20 +118,20 @@ export default async function ProfilePage({
             <p className="text-gray-500">About Me: {user.aboutMe}</p>
             <div className="mt-4 flex gap-2">
               {ownProfile ? (
-                <button className="bg-sky-500 text-white px-4 py-2 rounded-full hover:bg-sky-700 transition flex items-center">
-                  <Pencil size={16} className="mr-2" />
-                  Edit Profile
-                </button>
+                <EditProfileModalLauncher
+                  initialData={{
+                    name: user.name || "",
+                    aboutMe: user.aboutMe || "",
+                    selectedTags: user.selectedTags.map(({ tag }) => tag.name),
+                    imageSrc: user.avatarPhoto || null,
+                  }}
+                />
               ) : (
                 <>
-                  <button className="bg-gray-200 px-4 py-2 rounded-full hover:bg-gray-300 transition flex items-center">
-                    <UserPlus size={16} className="mr-2"/>
+                  <button className="bg-gray-200 ...">
                     Add to Contacts
                   </button>
-                  <button className="bg-gray-200 px-4 py-2 rounded-full hover:bg-gray-300 transition flex items-center">
-                    <Mail size={16} className="mr-2"/>
-                    Message
-                  </button>
+                  <button className="bg-gray-200 ...">Message</button>
                 </>
               )}
             </div>
@@ -145,31 +147,7 @@ export default async function ProfilePage({
           </div>
 
           {/* Right Bottom - Posts */}
-          <div className="bg-white h-1/2 w-full rounded-3xl shadow-lg p-4 overflow-y-auto custom-scrollbar scrollbar-gutter-stable">
-            <h2 className="text-lg font-semibold mb-2">Published Pictures</h2>
-            {user.posts.length > 0 ? (
-              <div className="grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4">
-                {user.posts.map((post) => (
-                  <Link
-                    key={post.id}
-                    href={`/post/${post.id}`}
-                    className="block relative overflow-hidden rounded-lg shadow-md"
-                  >
-                    <div className="w-full max-w-[150px] aspect-square">
-                      <Image
-                        src={post.imageUrl}
-                        alt={post.title}
-                        fill
-                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105 rounded-lg"
-                      />
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500">No posts yet.</p>
-            )}
-          </div>
+          <UserPosts posts={user.posts} />
         </div>
       </section>
     </div>

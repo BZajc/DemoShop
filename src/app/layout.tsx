@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Lexend } from "next/font/google";
 import "./globals.css";
-import ActionsPopup from "./components/other/actionsPopup";
 
 export const metadata: Metadata = {
   title: "Picbook",

@@ -14,13 +14,19 @@ export interface UserData {
   imageSrc?: string | null;
 }
 
-export default function FirstTimeData() {
+interface UserInformationProps {
+  initialData?: UserData;
+  onClose?: () => void;
+}
+
+export default function UserInformation(props: UserInformationProps) {
+  const { initialData, onClose } = props;
   const [step, setStep] = useState(1);
   const [userData, setUserData] = useState<UserData>({
-    name: "",
-    aboutMe: "",
-    selectedTags: [],
-    imageSrc: null,
+    name: initialData?.name || "",
+    aboutMe: initialData?.aboutMe || "",
+    selectedTags: initialData?.selectedTags || [],
+    imageSrc: initialData?.imageSrc || null,
   });
   const [isVisible, setIsVisible] = useState(true);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
@@ -30,6 +36,12 @@ export default function FirstTimeData() {
   const handleDataChange = (newData: UserData) => {
     setUserData((prev) => ({ ...prev, ...newData }));
   };
+
+  useEffect(() => {
+    if (!isVisible && onClose) {
+      onClose();
+    }
+  }, [isVisible]);
 
   // Remove scroll from body if modal is visible
   useEffect(() => {

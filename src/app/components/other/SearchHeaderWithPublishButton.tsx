@@ -1,9 +1,9 @@
 "use client";
 import { Search } from "lucide-react";
 import { useState, useEffect } from "react";
-import CreatePost from "./feedpost/CreatePost";
+import CreatePost from "./CreatePost";
 
-export default function FeedHeader() {
+export default function SearchHeaderWithPublishButton() {
   const [isFocused, setIsFocused] = useState(false);
   const [showAddPost, setShowAddPost] = useState(false);
 
@@ -20,7 +20,7 @@ export default function FeedHeader() {
   }, [showAddPost]);
 
   return (
-    <header className="flex m-4">
+    <div className="flex">
       <form
         className={`flex items-center rounded-full flex-1 transition-all duration-300 ${
           isFocused ? "bg-sky-200" : "bg-stone-200"
@@ -49,6 +49,6 @@ export default function FeedHeader() {
         Publish Picture
       </button>
       {showAddPost && <CreatePost setShowAddPost={setShowAddPost} />}
-    </header>
+    </div>
   );
 }

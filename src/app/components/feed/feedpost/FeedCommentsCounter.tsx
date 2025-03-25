@@ -1,25 +1,22 @@
-"use client";
-import { useState } from "react";
+import prisma from "@/lib/prisma";
 
-export default function FeedComments() {
-  const [showComments, setShowComments] = useState(false);
+interface FeedCommentsProps {
+  postId: string;
+}
+
+export default async function FeedComments({ postId }: FeedCommentsProps) {
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    include: { comments: true },
+  });
 
   return (
     <div>
-      <button 
-        onClick={() => setShowComments(!showComments)} 
-        className="flex hover:text-sky-400 duration-300 transition-all p-2"
-      >
+      <button className="flex hover:text-sky-400 duration-300 transition-all p-2">
         Comments
         <p className="mx-2">·</p>
-        <p>4</p>
+        <p>{post?.comments.length ?? 0}</p>
       </button>
-
-      {showComments && (
-        <div>
-            <button>Sort by: Recent</button>
-        </div>
-      )}
     </div>
   );
 }

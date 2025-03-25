@@ -65,6 +65,7 @@ model User {
   @@unique([name, hashtag])
   SuggestedTags SuggestedTags[]
   PostReactions PostReactions[]
+  CommentReaction CommentReaction[]
 }
 
 model Follows {
@@ -127,7 +128,23 @@ model Comment {
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  CommentReaction CommentReaction[]
 }
+
+model CommentReaction {
+  id         String   @id @default(uuid())
+  userId     String
+  commentId  String
+  reaction   String   // like or dislike
+  createdAt  DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+}
+
 
 model UserTag {
   userId String
