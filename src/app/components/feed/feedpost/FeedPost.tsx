@@ -5,13 +5,14 @@ import FeedCommentsCounter from "./FeedCommentsCounter";
 import FeedCommentInput from "./FeedCommentInput";
 import { Post } from "@/types/Post";
 import ReactionButtons from "./ReactionButtons";
+import FeedFollow from "./FeedFollow";
 
 interface FeedPostProps {
   post: Post;
 }
 
 export default function FeedPost({ post }: FeedPostProps) {
-  const { id, imageUrl, title, user, tags, createdAt, reactions } = post;
+  const { id, imageUrl, title, user, userId, tags, createdAt, reactions } = post;
   const formattedDate = new Date(createdAt).toLocaleString();
 
   // Calculate likes and dislikes
@@ -41,10 +42,7 @@ export default function FeedPost({ post }: FeedPostProps) {
         <div className="flex justify-between">
           <div className="flex items-center text-sm">
             <p>Published {formattedDate}</p>
-            <p className="mx-2">·</p>
-            <button className="hover:text-sky-400 transition-all duration-300">
-              Follow
-            </button>
+            <FeedFollow userId={userId}/>
           </div>
           <button className="hover:text-sky-400 duration-300 transition-all">
             <EllipsisVertical />
@@ -126,7 +124,6 @@ export default function FeedPost({ post }: FeedPostProps) {
           <Link href={`post/${post.id}`}>
             <FeedCommentsCounter postId={id} />
           </Link>
-          
         </div>
         <FeedCommentInput postId={id} />
       </div>

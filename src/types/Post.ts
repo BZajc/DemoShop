@@ -15,6 +15,7 @@ export interface Post {
   createdAt: Date;
   updatedAt: Date;
   user: {
+    id: string;
     name: string;
     realName?: string | null;
     hashtag: string;

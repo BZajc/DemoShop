@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Lexend } from "next/font/google";
 import "./globals.css";
+import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: "Picbook",
@@ -13,7 +14,6 @@ const lexend = Lexend({
   variable: "--font-lexend",
 });
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -21,8 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${lexend.variable} antialiased custom-scrollbar scrollbar-gutter-stable`}>
-        {children}
+      <body
+        className={`${lexend.variable} antialiased custom-scrollbar scrollbar-gutter-stable`}
+      >
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

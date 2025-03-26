@@ -66,7 +66,6 @@ export const authOptions: AuthOptions = {
         let hashtag: string = generateHashtag();
         let isUnique = false;
 
-        // Ensure unique combination of `name + hashtag`
         while (!isUnique) {
           const checkUser = await prisma.user.findUnique({
             where: {
@@ -80,11 +79,10 @@ export const authOptions: AuthOptions = {
           if (!checkUser) {
             isUnique = true;
           } else {
-            hashtag = generateHashtag(); // If not unique, generate a new hashtag
+            hashtag = generateHashtag();
           }
         }
 
-        // Create a new user with a unique hashtag
         existingUser = await prisma.user.create({
           data: {
             name,
@@ -94,7 +92,6 @@ export const authOptions: AuthOptions = {
           },
         });
       } else if (!existingUser.hashtag) {
-        // If the user exists but has no hashtag generate one
         let hashtag: string = generateHashtag();
         let isUnique = false;
 
@@ -126,14 +123,13 @@ export const authOptions: AuthOptions = {
 
     async jwt({ token, user }: { token: any; user?: any }) {
       if (user) {
-        // Fetch hashtag from database if user exists
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email },
           select: { id: true, hashtag: true },
         });
 
         if (dbUser) {
-          token.sub = dbUser.id;
+          token.id = dbUser.id;
           token.hashtag = dbUser.hashtag || "";
         }
       }
@@ -142,7 +138,7 @@ export const authOptions: AuthOptions = {
 
     async session({ session, token }: { session: any; token: any }) {
       if (session.user) {
-        session.user.id = token.sub;
+        session.user.id = token.id;
         session.user.hashtag = token.hashtag || "";
       }
       return session;

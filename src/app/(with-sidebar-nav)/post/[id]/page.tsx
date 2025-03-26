@@ -7,16 +7,14 @@ import PostImageModal from "@/app/components/post/PostImageModal";
 import ReactionButtons from "@/app/components/feed/feedpost/ReactionButtons";
 import Comments from "@/app/components/post/Comments";
 import SearchHeaderWithPublishButton from "@/app/components/other/SearchHeaderWithPublishButton";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
 
 interface PostPageProps {
   params: Promise<{ id: string }>;
 }
 
 export default async function PostPage({ params }: PostPageProps) {
-  const session = await getServerSession(authOptions);
-const currentUserId = session?.user?.id ?? null;
+
 
   const { id } = await params;
 
@@ -25,6 +23,7 @@ const currentUserId = session?.user?.id ?? null;
     include: {
       user: {
         select: {
+          id: true,
           name: true,
           hashtag: true,
           realName: true,
