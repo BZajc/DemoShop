@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { followUser } from "@/app/api/actions/followUser";
+import { getFollowingUsersIds } from "@/app/api/actions/getFollowingUsersIds";
 import { useSession } from "next-auth/react";
 
 interface FollowContextValue {
@@ -9,7 +10,7 @@ interface FollowContextValue {
   toggleFollow: (userId: string) => Promise<void>;
 }
 
-const FollowContext = createContext<FollowContextValue | undefined>(undefined);
+const FollowContext = createContext<FollowContextValue | null>(null);
 
 export const FollowProvider = ({ children }: { children: React.ReactNode }) => {
   const { data: session } = useSession();
@@ -20,13 +21,22 @@ export const FollowProvider = ({ children }: { children: React.ReactNode }) => {
 
   const toggleFollow = async (userId: string) => {
     await followUser(userId);
-    setFollowedUserIds(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(userId)) newSet.delete(userId);
-      else newSet.add(userId);
-      return newSet;
+    setFollowedUserIds((prev) => {
+      const updated = new Set(prev);
+      if (updated.has(userId)) updated.delete(userId);
+      else updated.add(userId);
+      return updated;
     });
   };
+
+  useEffect(() => {
+    if (!myUserId) return;
+    const fetchFollowed = async () => {
+      const ids = await getFollowingUsersIds();
+      setFollowedUserIds(new Set(ids));
+    };
+    fetchFollowed();
+  }, [myUserId]);
 
   return (
     <FollowContext.Provider value={{ isFollowed, toggleFollow }}>
@@ -36,7 +46,7 @@ export const FollowProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const useFollowContext = () => {
-  const context = useContext(FollowContext);
-  if (!context) throw new Error("useFollowContext must be used within FollowProvider");
-  return context;
+  const ctx = useContext(FollowContext);
+  if (!ctx) throw new Error("useFollowContext mustbe used within FollowProvider");
+  return ctx;
 };

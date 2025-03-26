@@ -16,11 +16,11 @@ export default function FeedFollow({ userId }: FeedFollowProps) {
 
   const followed = isFollowed(userId);
 
-  const handleFollowClick = async () => {
+  const handleClick = async () => {
     try {
       await toggleFollow(userId);
-    } catch (error) {
-      console.error("Failed to follow user:", error);
+    } catch (err) {
+      console.error("Follow error:", err);
     }
   };
 
@@ -31,7 +31,7 @@ export default function FeedFollow({ userId }: FeedFollowProps) {
         className={`transition-all duration-300 ${
           followed ? "text-sky-400 font-semibold" : "hover:text-sky-400"
         }`}
-        onClick={handleFollowClick}
+        onClick={handleClick}
       >
         {followed ? "Followed" : "Follow"}
       </button>
