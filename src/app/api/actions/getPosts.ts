@@ -12,7 +12,7 @@ export async function getPosts() {
           name: true,
           realName: true,
           hashtag: true,
-          avatarPhoto: true  // Zostawione bez zmian
+          avatarPhoto: true
         }
       },
       tags: {
@@ -24,7 +24,7 @@ export async function getPosts() {
           }
         }
       },
-      reactions: true  // Dodano include dla reactions, aby zliczać lajki i dislajki
+      reactions: true
     }
   });
 

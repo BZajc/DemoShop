@@ -1,4 +1,4 @@
-import { EllipsisVertical, Star, User } from "lucide-react";
+import { Star, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import FeedCommentsCounter from "./FeedCommentsCounter";
@@ -6,6 +6,7 @@ import FeedCommentInput from "./FeedCommentInput";
 import { Post } from "@/types/Post";
 import ReactionButtons from "./ReactionButtons";
 import FeedFollow from "./FeedFollow";
+import PostOptionsMenu from "../../post/PostOptionsMenu";
 
 interface FeedPostProps {
   post: Post;
@@ -44,9 +45,7 @@ export default function FeedPost({ post }: FeedPostProps) {
             <p>Published {formattedDate}</p>
             <FeedFollow userId={userId}/>
           </div>
-          <button className="hover:text-sky-400 duration-300 transition-all">
-            <EllipsisVertical />
-          </button>
+          <PostOptionsMenu authorId={userId} />
         </div>
 
         {/* Post data */}

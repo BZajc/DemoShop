@@ -1,21 +1,20 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { EllipsisVertical, Star, User } from "lucide-react";
+import { Star, User } from "lucide-react";
 import Link from "next/link";
 import PostImageModal from "@/app/components/post/PostImageModal";
 import ReactionButtons from "@/app/components/feed/feedpost/ReactionButtons";
 import Comments from "@/app/components/post/Comments";
 import SearchHeaderWithPublishButton from "@/app/components/other/SearchHeaderWithPublishButton";
-
+import PostOptionsMenu from "@/app/components/post/PostOptionsMenu";
+import FeedFollow from "@/app/components/feed/feedpost/FeedFollow";
 
 interface PostPageProps {
   params: Promise<{ id: string }>;
 }
 
 export default async function PostPage({ params }: PostPageProps) {
-
-
   const { id } = await params;
 
   const post = await prisma.post.findUnique({
@@ -58,13 +57,14 @@ export default async function PostPage({ params }: PostPageProps) {
   return (
     <div className="max-w-4xl mx-auto p-6 text-white animate-fade-in flex flex-col">
       <header>
-      <SearchHeaderWithPublishButton />
+        <SearchHeaderWithPublishButton />
         <button className="p-2 mt-2 rounded-full bg-sky-200 hover:bg-sky-400 hover:text-white transition-colors duration-300 text-sky-900">
-          <Link href={`/profile/${post.user.name}/${post.user.hashtag}`}
-          >@{post.user.name} profile</Link>
+          <Link href={`/profile/${post.user.name}/${post.user.hashtag}`}>
+            @{post.user.name} profile
+          </Link>
         </button>
         <h1 className="text-black text-2xl py-2">{post.title}</h1>
-      </header>  
+      </header>
       <div
         className="relative rounded-xl p-4 mt-2"
         style={{
@@ -76,11 +76,12 @@ export default async function PostPage({ params }: PostPageProps) {
         <div className="absolute inset-0 bg-black/50 backdrop-blur-lg rounded-xl"></div>
         <div className="relative z-10">
           {/* Post Container */}
-          <div className="flex justify-between text-sm">
-            <p>Published {formattedDate}</p>
-            <button className="hover:text-sky-400 transition-all duration-300">
-              <EllipsisVertical />
-            </button>
+          <div className="flex justify-between text-sm items-center">
+            <div className="flex items-center gap-2">
+              <p>Published {formattedDate}</p>
+              <FeedFollow userId={post.user.id} />
+            </div>
+            <PostOptionsMenu authorId={post.user.id} />
           </div>
 
           {/* Author Info */}
@@ -148,17 +149,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
           {/* Comments */}
           <div className="mt-6">
-            <Comments
-              postId={post.id}
-              comments={post.comments.map((comment) => ({
-                id: comment.id,
-                content: comment.content,
-                userId: comment.userId,
-                userName: comment.user?.name,
-                userAvatar: comment.user?.avatarPhoto ?? null,
-                createdAt: comment.createdAt.toISOString(),
-              }))}
-            />
+          <Comments postId={post.id} />
           </div>
         </div>
       </div>

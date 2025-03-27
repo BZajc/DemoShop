@@ -6,6 +6,7 @@ import ThirdModal from "./ThirdModal";
 import { updateUserData } from "@/app/api/actions/updateUserData";
 import { X, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { completeUserSetup } from "@/app/api/actions/completeSetup";
 
 export interface UserData {
   name?: string;
@@ -78,6 +79,7 @@ export default function UserInformation(props: UserInformationProps) {
 
       if (response.success) {
         setIsVisible(false);
+        await completeUserSetup();
         console.log("User data updated successfully!", response.user);
         router.push(`/profile/${response?.user?.name}/${response?.user?.hashtag}`);
       } else {

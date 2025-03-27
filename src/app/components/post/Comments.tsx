@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, Smile, ThumbsUp, User } from "lucide-react";
+import { MessageCircle, Smile, User } from "lucide-react";
 import Image from "next/image";
 import { createComment } from "@/app/api/actions/createComment";
+import { getComments } from "@/app/api/actions/getComments";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 
@@ -17,7 +18,6 @@ interface Comment {
 }
 
 interface CommentsProps {
-  comments: Comment[];
   postId: string;
 }
 
@@ -34,17 +34,21 @@ function timeAgo(dateString: string) {
   return `${days} day${days === 1 ? "" : "s"} ago`;
 }
 
-export default function Comments({ comments, postId }: CommentsProps) {
+export default function Comments({ postId }: CommentsProps) {
   const [showPicker, setShowPicker] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
+  const [sortBy, setSortBy] = useState<"recent" | "random">("recent");
+  const [inputValue, setInputValue] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Close emoji picker if clicked outside
+  const [allComments, setAllComments] = useState<Comment[]>([]);
+  const [visibleCount, setVisibleCount] = useState(10);
+  const take = 10;
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        pickerRef.current &&
-        !pickerRef.current.contains(event.target as Node)
-      ) {
+      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
         setShowPicker(false);
       }
     };
@@ -56,21 +60,18 @@ export default function Comments({ comments, postId }: CommentsProps) {
     };
   }, [showPicker]);
 
-  const [sortBy, setSortBy] = useState<"recent" | "popular" | "random">(
-    "recent"
-  );
-  const [inputValue, setInputValue] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const loadComments = async () => {
+    const fetched = await getComments({ postId, take: 1000, sortBy });
+    const shuffled = sortBy === "random"
+      ? [...fetched].sort(() => Math.random() - 0.5)
+      : fetched;
+    setAllComments(shuffled);
+    setVisibleCount(10);
+  };
 
-  const sortedComments = [...comments].sort((a, b) => {
-    if (sortBy === "random") return Math.random() - 0.5;
-    if (sortBy === "popular") return b.content.length - a.content.length;
-    if (sortBy === "recent") {
-      return new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime();
-    }
-    return 0;
-  });
+  useEffect(() => {
+    loadComments();
+  }, [sortBy]);
 
   const handleSubmit = async () => {
     if (!inputValue.trim()) return;
@@ -78,16 +79,15 @@ export default function Comments({ comments, postId }: CommentsProps) {
     setError(null);
     try {
       await createComment({ postId, content: inputValue });
-      window.location.reload();
+      setInputValue("");
+      loadComments();
     } catch (err) {
       setError("Failed to submit comment. Try again.");
     } finally {
       setSubmitting(false);
-      setInputValue("");
     }
   };
 
-  // Show emoji picker
   const handleEmojiSelect = (emoji: { native: string }) => {
     const newValue = inputValue + emoji.native;
     if (newValue.length <= maxChars) {
@@ -96,11 +96,12 @@ export default function Comments({ comments, postId }: CommentsProps) {
   };
 
   const maxChars = 400;
+  const visibleComments = allComments.slice(0, visibleCount);
 
   return (
     <div className="mt-6">
       <div>
-        Comments <span className="mx-2">·</span> {comments.length}
+        Comments <span className="mx-2">·</span> {allComments.length}
       </div>
       <div className="mt-4">
         <div className="mb-4 flex items-center gap-4">
@@ -108,18 +109,17 @@ export default function Comments({ comments, postId }: CommentsProps) {
           <div className="relative inline-block text-left">
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as "recent" | "random")}
               className="appearance-none bg-white/10 text-white font-medium px-4 py-1 rounded-full focus:outline-none focus:ring-2 focus:ring-sky-400 transition-all [&>option]:bg-neutral-800 [&>option]:text-white"
             >
               <option value="recent">Recent</option>
-              <option value="popular">Most Popular</option>
               <option value="random">Random</option>
             </select>
           </div>
         </div>
 
         <div className="space-y-4">
-          {sortedComments.map((comment) => (
+          {visibleComments.map((comment) => (
             <div
               key={comment.id}
               className="flex gap-4 items-start bg-white/10 p-3 rounded-lg"
@@ -153,6 +153,15 @@ export default function Comments({ comments, postId }: CommentsProps) {
             </div>
           ))}
         </div>
+
+        {visibleCount < allComments.length && (
+          <button
+            onClick={() => setVisibleCount((prev) => prev + take)}
+            className="mt-4 text-sm text-sky-400 hover:underline"
+          >
+            Show more comments
+          </button>
+        )}
 
         <div className="mt-6 flex items-center gap-2 relative">
           <textarea
