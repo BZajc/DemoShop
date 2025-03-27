@@ -45,6 +45,7 @@ export async function followUser(userToFollowId: string) {
       return { success: true, followed: true };
     }
   } catch (err) {
-    return { success: false, err: "Server error" };
+    console.error("Follow user error:", err);
+    return { success: false, error: "Server error" };
   }
 }

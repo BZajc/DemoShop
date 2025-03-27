@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import EmojiPicker from "emoji-picker-react"
+import EmojiPicker from "emoji-picker-react";
 import { MessageCircle, Smile } from "lucide-react";
 import { createComment } from "@/app/api/actions/createComment";
 import { useRouter } from "next/navigation";
@@ -94,10 +94,13 @@ export default function FeedCommentInput({ postId }: { postId: string }) {
           <Smile className="transition-all duration-300 hover:text-sky-400 text-sky-400" />
         </button>
         {showPicker && (
-  <div ref={pickerRef} className="absolute bottom-full right-0 mb-2 z-50">
-    <EmojiPicker onEmojiClick={handleEmojiSelect} />
-  </div>
-)}
+          <div
+            ref={pickerRef}
+            className="absolute bottom-full right-0 mb-2 z-50"
+          >
+            <EmojiPicker onEmojiClick={handleEmojiSelect} />
+          </div>
+        )}
 
         <button type="submit" disabled={loading}>
           <MessageCircle className="transition-all duration-300 hover:text-sky-400 text-sky-400" />

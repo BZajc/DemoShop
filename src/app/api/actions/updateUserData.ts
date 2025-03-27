@@ -69,11 +69,13 @@ export async function updateUserData(data: FormData) {
         selectedTags: updatedUser.selectedTags.map((ut) => ut.tag.name),
       },
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating user data:", error);
+
     return {
       success: false,
-      error: error.message || "Failed to update user data",
+      error:
+        error instanceof Error ? error.message : "Failed to update user data",
     };
   }
 }

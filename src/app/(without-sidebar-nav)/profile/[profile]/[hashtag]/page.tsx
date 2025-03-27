@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { House, Mail, User, UserPlus } from "lucide-react";
+import { House, User} from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";

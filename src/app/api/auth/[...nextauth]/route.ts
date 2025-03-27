@@ -4,6 +4,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { generateHashtag } from "@/lib/utils";
+import { JWT } from "next-auth/jwt";
+import { Session, User } from "next-auth";
 
 const prisma = new PrismaClient();
 
@@ -121,8 +123,8 @@ export const authOptions: AuthOptions = {
       return true;
     },
 
-    async jwt({ token, user }: { token: any; user?: any }) {
-      if (user) {
+    async jwt({ token, user }: { token: JWT; user?: User }) {
+      if (user?.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email },
           select: { id: true, hashtag: true },
@@ -136,10 +138,11 @@ export const authOptions: AuthOptions = {
       return token;
     },
 
-    async session({ session, token }: { session: any; token: any }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (session.user) {
-        session.user.id = token.id;
-        session.user.hashtag = token.hashtag || "";
+        session.user.id = typeof token.id === "string" ? token.id : "";
+        session.user.hashtag =
+          typeof token.hashtag === "string" ? token.hashtag : "";
       }
       return session;
     },

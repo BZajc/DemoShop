@@ -19,16 +19,16 @@ export default function ActivityPanel() {
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
-  // Lista ostatnio odwiedzonych
+  // Recently visited list
   const [recentlyVisited, setRecentlyVisited] = useState<User[]>([]);
 
-  // Lista online (Placeholder na później)
-  const [onlineUsers, setOnlineUsers] = useState<User[]>([]);
+  // Online List (placeholder for later)
+  // const [onlineUsers, setOnlineUsers] = useState<User[]>([]);
 
-  // Aktywna lista (Recently Visited lub Online)
+  // Active list
   const [activeList, setActiveList] = useState<"recentlyVisited" | "online">("recentlyVisited");
 
-  // Pobierz ostatnio odwiedzonych użytkowników
+  // Fetch latest visited users
   useEffect(() => {
     async function fetchRecentlyVisited() {
       const users = await getRecentlyVisited();
@@ -37,7 +37,7 @@ export default function ActivityPanel() {
     fetchRecentlyVisited();
   }, []);
 
-  // Handler zmieniający aktywną listę
+  // Change list
   const handleListChange = (listType: "recentlyVisited" | "online") => {
     setActiveList(listType);
   };
@@ -94,7 +94,7 @@ export default function ActivityPanel() {
         onMouseUp={handleMouseUp}
         className="flex items-center gap-12 py-8 px-4 justify-start cursor-grab active:cursor-grabbing overflow-x-auto overflow-y-hidden custom-scrollbar scrollbar-gutter-stable"
       >
-        {/* Renderowanie listy użytkowników */}
+        {/* Render users list */}
         {activeList === "recentlyVisited" ? (
           recentlyVisited.length > 0 ? (
             recentlyVisited.map((user) => (

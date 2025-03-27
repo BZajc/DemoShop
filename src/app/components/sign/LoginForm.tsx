@@ -131,7 +131,7 @@ export default function LoginForm({ handleFormChange }: LoginFormProps) {
       {/* Form Swap */}
       <div className="border-b-2 border-sky-400 w-[30%] my-4 mx-auto" />
       <p className="text-center text-2xl text-sky-400">
-        Don't have an account yet?
+        Don&apos;t have an account yet?
       </p>
       <Button
         variant="default"
