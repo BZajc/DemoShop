@@ -5,8 +5,8 @@ import { MessageCircle, Smile, User } from "lucide-react";
 import Image from "next/image";
 import { createComment } from "@/app/api/actions/createComment";
 import { getComments } from "@/app/api/actions/getComments";
-import data from "@emoji-mart/data";
-import Picker from "@emoji-mart/react";
+import EmojiPicker from "emoji-picker-react"
+
 
 interface Comment {
   id: string;
@@ -88,8 +88,8 @@ export default function Comments({ postId }: CommentsProps) {
     }
   };
 
-  const handleEmojiSelect = (emoji: { native: string }) => {
-    const newValue = inputValue + emoji.native;
+  const handleEmojiSelect = (emoji: any) => {
+    const newValue = inputValue + emoji.emoji;
     if (newValue.length <= maxChars) {
       setInputValue(newValue);
     }
@@ -198,10 +198,10 @@ export default function Comments({ postId }: CommentsProps) {
               <Smile />
             </button>
             {showPicker && (
-              <div className="absolute bottom-full mb-2" ref={pickerRef}>
-                <Picker data={data} onEmojiSelect={handleEmojiSelect} />
-              </div>
-            )}
+  <div className="absolute bottom-full mb-2" ref={pickerRef}>
+    <EmojiPicker onEmojiClick={handleEmojiSelect} />
+  </div>
+)}
           </div>
         </div>
         {error && <p className="text-red-400 text-sm mt-2">{error}</p>}

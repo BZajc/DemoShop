@@ -1,7 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import data from "@emoji-mart/data";
-import Picker from "@emoji-mart/react";
+import EmojiPicker from "emoji-picker-react"
 import { MessageCircle, Smile } from "lucide-react";
 import { createComment } from "@/app/api/actions/createComment";
 import { useRouter } from "next/navigation";
@@ -36,8 +35,8 @@ export default function FeedCommentInput({ postId }: { postId: string }) {
     };
   }, [showPicker]);
 
-  const handleEmojiSelect = (emoji: { native: string }) => {
-    const newValue = input + emoji.native;
+  const handleEmojiSelect = (emoji: any) => {
+    const newValue = input + emoji.emoji;
     if (newValue.length <= maxChars) {
       setInput(newValue);
     }
@@ -94,15 +93,11 @@ export default function FeedCommentInput({ postId }: { postId: string }) {
         >
           <Smile className="transition-all duration-300 hover:text-sky-400 text-sky-400" />
         </button>
-
         {showPicker && (
-          <div
-            ref={pickerRef}
-            className="absolute bottom-full right-0 mb-2 z-50"
-          >
-            <Picker data={data} onEmojiSelect={handleEmojiSelect} />
-          </div>
-        )}
+  <div ref={pickerRef} className="absolute bottom-full right-0 mb-2 z-50">
+    <EmojiPicker onEmojiClick={handleEmojiSelect} />
+  </div>
+)}
 
         <button type="submit" disabled={loading}>
           <MessageCircle className="transition-all duration-300 hover:text-sky-400 text-sky-400" />
