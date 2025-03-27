@@ -14,6 +14,7 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
   const [isFocused, setIsFocused] = useState(false);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [title, setTitle] = useState("");
@@ -45,31 +46,31 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
 
   // Filter tags while typing
   useEffect(() => {
-    if (tagInput.trim().length > 0) {
-      // Remove leading '#' characters from user input
-      const cleanedInput = tagInput.trim().replace(/^#+/, "");
-
-      const filteredTags = availableTags
-        .filter(
-          (tag) =>
-            tag
-              .replace(/^#+/, "")
-              .toLowerCase()
-              .startsWith(cleanedInput.toLowerCase()) &&
-            // Ensure the tag is not already selected by the user
-            !selectedTags.includes(tag)
-        )
-        .sort((a, b) => a.localeCompare(b));
-
-      setSuggestedTags(filteredTags);
-    } else {
-      setSuggestedTags(
-        availableTags
-          .filter((tag) => !selectedTags.includes(tag))
-          .sort((a, b) => a.localeCompare(b))
-      );
+    const cleanedInput = tagInput.trim().replace(/^#+/, "");
+  
+    if (cleanedInput.length === 0) {
+      setSuggestedTags([]);
+      return;
     }
-  }, [tagInput, isFocused, selectedTags, availableTags]);
+  
+    const fetchTags = async () => {
+      try {
+        const response = await fetch(`/api/getTags?query=${encodeURIComponent(cleanedInput)}`);
+        const data = await response.json();
+        if (data.success) {
+          const filtered = data.tags.filter((tag: string) => !selectedTags.includes(tag));
+          setSuggestedTags(filtered);
+        }
+      } catch (error) {
+        console.error("Error fetching filtered tags:", error);
+      }
+    };
+  
+    const delay = setTimeout(fetchTags, 200); // debounce
+  
+    return () => clearTimeout(delay);
+  }, [tagInput, selectedTags]);
+  
 
   const handleTagInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTagInput(event.target.value);
@@ -101,8 +102,10 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
       const reader = new FileReader();
       reader.onload = (e) => setImagePreview(e.target?.result as string);
       reader.readAsDataURL(file);
+  
+      setImageFile(file);
     }
-
+  
     setErrors((prevErrors) => ({
       ...prevErrors,
       image: "",
@@ -170,19 +173,13 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
   const handlePublish = async () => {
     if (validatePost()) {
       setIsSubmitting(true);
-
-      // Create formData
+  
       const formData = new FormData();
       formData.append("title", title);
       formData.append("tags", JSON.stringify(selectedTags));
-
-      // Check if image is added
-      const imageFileInput = document.getElementById(
-        "file-upload"
-      ) as HTMLInputElement;
-      const file = imageFileInput?.files?.[0] ?? null;
-      if (file) {
-        formData.append("image", file);
+  
+      if (imageFile) {
+        formData.append("image", imageFile);
       } else {
         setErrors((prevErrors) => ({
           ...prevErrors,
@@ -235,6 +232,7 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
             e.preventDefault();
             handlePublish();
           }}
+          className="text-black relative"
         >
           {/* Title Input */}
           <label htmlFor="title" className="block text-sm font-medium">
