@@ -5,7 +5,7 @@ import { MessageCircle, Smile, User } from "lucide-react";
 import Image from "next/image";
 import { createComment } from "@/app/api/actions/createComment";
 import { getComments } from "@/app/api/actions/getComments";
-import EmojiPicker from "emoji-picker-react";
+import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 
 interface Comment {
   id: string;
@@ -92,7 +92,7 @@ export default function Comments({ postId }: CommentsProps) {
     }
   };
 
-  const handleEmojiSelect = (emoji: any) => {
+  const handleEmojiSelect = (emoji: EmojiClickData) => {
     const newValue = inputValue + emoji.emoji;
     if (newValue.length <= maxChars) {
       setInputValue(newValue);

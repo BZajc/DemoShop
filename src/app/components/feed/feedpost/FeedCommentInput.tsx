@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import EmojiPicker from "emoji-picker-react";
+import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { MessageCircle, Smile } from "lucide-react";
 import { createComment } from "@/app/api/actions/createComment";
 import { useRouter } from "next/navigation";
@@ -35,7 +35,7 @@ export default function FeedCommentInput({ postId }: { postId: string }) {
     };
   }, [showPicker]);
 
-  const handleEmojiSelect = (emoji: any) => {
+  const handleEmojiSelect = (emoji: EmojiClickData) => {
     const newValue = input + emoji.emoji;
     if (newValue.length <= maxChars) {
       setInput(newValue);
