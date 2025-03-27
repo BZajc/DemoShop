@@ -13,6 +13,7 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
   const [tagInput, setTagInput] = useState("");
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
   const [isFocused, setIsFocused] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
