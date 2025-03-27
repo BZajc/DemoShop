@@ -1,7 +1,8 @@
 "use server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "../auth/authOptions";
+
 import { uploadUserProfileImage } from "@/lib/cloudinary";
 
 export async function updateUserData(data: FormData) {

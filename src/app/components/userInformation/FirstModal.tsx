@@ -141,7 +141,7 @@ export default function FirstModal({
       <div className="w-full mt-4">
         <form className="flex flex-col text-start relative">
           {/* Name */}
-          <label htmlFor="realname">🕵🏻‍♀️ What's your real name?</label>
+          <label htmlFor="realname">🕵🏻‍♀️ What&apos;s your real name?</label>
           <input
             type="text"
             name="realname"

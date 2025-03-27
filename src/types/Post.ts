@@ -18,7 +18,7 @@ export interface Post {
     id: string;
     name: string;
     realName?: string | null;
-    hashtag: string;
+    hashtag: string | null;
     avatarPhoto: string | null;
   };
   tags: {

@@ -9,6 +9,7 @@ export async function getPosts() {
     include: {
       user: {
         select: {
+          id: true,
           name: true,
           realName: true,
           hashtag: true,

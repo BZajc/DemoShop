@@ -33,7 +33,12 @@ export async function loginUser(formData: FormData) {
   }
 
   // Check Password
+  if (!user.password) {
+    return { errors: { password: "User doesn't have a password set." }, status: 400 };
+  }
+  
   const isPasswordValid = await bcrypt.compare(password, user.password);
+
   if (!isPasswordValid) {
     return { errors: { password: "Incorrect Password" }, status: 400 };
   }
