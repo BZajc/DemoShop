@@ -6,6 +6,7 @@ import Image from "next/image";
 import { createComment } from "@/app/api/actions/createComment";
 import { getComments } from "@/app/api/actions/getComments";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
+import { useSession } from "next-auth/react";
 
 interface Comment {
   id: string;
@@ -14,7 +15,9 @@ interface Comment {
   userName?: string;
   createdAt?: string;
   userAvatar?: string | null;
+  pending?: boolean; // only for optimistic UI
 }
+
 
 interface CommentsProps {
   postId: string;
@@ -42,8 +45,12 @@ export default function Comments({ postId }: CommentsProps) {
   const [error, setError] = useState<string | null>(null);
 
   const [allComments, setAllComments] = useState<Comment[]>([]);
-  const [visibleCount, setVisibleCount] = useState(10);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   const take = 10;
+
+  const { data: session } = useSession();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -62,18 +69,21 @@ export default function Comments({ postId }: CommentsProps) {
     };
   }, [showPicker]);
 
-  const loadComments = async () => {
-    const fetched = await getComments({ postId, take: 1000, sortBy });
-    const shuffled =
+  const loadComments = async (reset = false) => {
+    const skip = reset ? 0 : allComments.length;
+    const fetched = await getComments({ postId, skip, take, sortBy });
+
+    const nextComments =
       sortBy === "random"
         ? [...fetched].sort(() => Math.random() - 0.5)
         : fetched;
-    setAllComments(shuffled);
-    setVisibleCount(10);
+
+    setAllComments((prev) => (reset ? nextComments : [...prev, ...nextComments]));
+    setHasMore(nextComments.length === take);
   };
 
   useEffect(() => {
-    loadComments();
+    loadComments(true); // reset comments when sort changes
   }, [sortBy]);
 
   const handleSubmit = async () => {
@@ -83,9 +93,9 @@ export default function Comments({ postId }: CommentsProps) {
     try {
       await createComment({ postId, content: inputValue });
       setInputValue("");
-      loadComments();
+      await loadComments(true); // reload all comments (or you could just prepend one if API returned it)
     } catch (error) {
-      console.error(error)
+      console.error(error);
       setError("Failed to submit comment. Try again.");
     } finally {
       setSubmitting(false);
@@ -100,7 +110,6 @@ export default function Comments({ postId }: CommentsProps) {
   };
 
   const maxChars = 400;
-  const visibleComments = allComments.slice(0, visibleCount);
 
   return (
     <div className="mt-6">
@@ -123,7 +132,7 @@ export default function Comments({ postId }: CommentsProps) {
         </div>
 
         <div className="space-y-4">
-          {visibleComments.map((comment) => (
+          {allComments.map((comment) => (
             <div
               key={comment.id}
               className="flex gap-4 items-start bg-white/10 p-3 rounded-lg"
@@ -158,9 +167,10 @@ export default function Comments({ postId }: CommentsProps) {
           ))}
         </div>
 
-        {visibleCount < allComments.length && (
+        {hasMore && (
           <button
-            onClick={() => setVisibleCount((prev) => prev + take)}
+            onClick={() => loadComments()}
+            disabled={loadingMore}
             className="mt-4 text-sm text-sky-400 hover:underline"
           >
             Show more comments

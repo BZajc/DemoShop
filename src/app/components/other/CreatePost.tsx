@@ -25,6 +25,7 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
     image: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // Fetch tags from database and sort them alphabetically
   useEffect(() => {
@@ -48,30 +49,33 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
   // Filter tags while typing
   useEffect(() => {
     const cleanedInput = tagInput.trim().replace(/^#+/, "");
-  
+
     if (cleanedInput.length === 0) {
       setSuggestedTags([]);
       return;
     }
-  
+
     const fetchTags = async () => {
       try {
-        const response = await fetch(`/api/getTags?query=${encodeURIComponent(cleanedInput)}`);
+        const response = await fetch(
+          `/api/getTags?query=${encodeURIComponent(cleanedInput)}`
+        );
         const data = await response.json();
         if (data.success) {
-          const filtered = data.tags.filter((tag: string) => !selectedTags.includes(tag));
+          const filtered = data.tags.filter(
+            (tag: string) => !selectedTags.includes(tag)
+          );
           setSuggestedTags(filtered);
         }
       } catch (error) {
         console.error("Error fetching filtered tags:", error);
       }
     };
-  
+
     const delay = setTimeout(fetchTags, 200); // debounce
-  
+
     return () => clearTimeout(delay);
   }, [tagInput, selectedTags]);
-  
 
   const handleTagInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTagInput(event.target.value);
@@ -103,10 +107,10 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
       const reader = new FileReader();
       reader.onload = (e) => setImagePreview(e.target?.result as string);
       reader.readAsDataURL(file);
-  
+
       setImageFile(file);
     }
-  
+
     setErrors((prevErrors) => ({
       ...prevErrors,
       image: "",
@@ -174,11 +178,11 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
   const handlePublish = async () => {
     if (validatePost()) {
       setIsSubmitting(true);
-  
+
       const formData = new FormData();
       formData.append("title", title);
       formData.append("tags", JSON.stringify(selectedTags));
-  
+
       if (imageFile) {
         formData.append("image", imageFile);
       } else {
@@ -194,8 +198,12 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
         const result = await createPost(formData);
 
         if (result.success) {
-          console.log("Post created successfully:", result.post);
-          setShowAddPost(false);
+          setShowSuccess(true); // Set success state to change button text
+
+          setTimeout(() => {
+            setShowSuccess(false);
+            setShowAddPost(false);
+          }, 2000);
         } else {
           console.error("Failed to create post:", result.error);
         }
@@ -203,7 +211,7 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
         console.error("Error creating post:", error);
       }
 
-      setIsSubmitting(false); // Stop loader after submission
+      setIsSubmitting(false);
     }
   };
 
@@ -301,20 +309,26 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
           {/* Image Upload - Drag & Drop Area */}
           <label
             htmlFor="file-upload"
-            className="block text-sm font-medium mb-2"
-          >
-            Upload Image
-          </label>
-          <div
             className={`flex flex-col items-center justify-center border-2 border-dashed p-6 rounded-lg cursor-pointer transition ${
               isDragging
                 ? "border-sky-500 bg-sky-100"
                 : "border-gray-300 hover:bg-gray-100"
             }`}
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
+            onDragOver={(e: React.DragEvent<HTMLLabelElement>) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragEnter={(e: React.DragEvent<HTMLLabelElement>) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={(e: React.DragEvent<HTMLLabelElement>) => {
+              e.preventDefault();
+              setIsDragging(false);
+              const file = e.dataTransfer.files[0] ?? null;
+              handleImageUpload(file);
+            }}
           >
             <input
               type="file"
@@ -324,17 +338,13 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
               accept="image/*"
               onChange={handleFileChange}
             />
-            <label
-              htmlFor="file-upload"
-              className="flex flex-col items-center cursor-pointer"
-            >
-              <UploadCloud size={32} className="text-gray-500 mb-2" />
-              <span className="text-gray-600 text-sm">
-                Click to upload or drag & drop
-              </span>
-              <span className="text-gray-600 text-sm">Max image size 2mb</span>
-            </label>
-          </div>
+            <UploadCloud size={32} className="text-gray-500 mb-2" />
+            <span className="text-gray-600 text-sm">
+              Click to upload or drag & drop
+            </span>
+            <span className="text-gray-600 text-sm">Max image size 2mb</span>
+          </label>
+
           {errors.image && (
             <p className="text-red-500 text-sm">{errors.image}</p>
           )}
@@ -358,13 +368,19 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isSubmitting}
-            className={`bg-sky-500 text-white p-2 rounded w-full mt-4 hover:bg-sky-700 transition ${
-              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+            disabled={isSubmitting || showSuccess}
+            className={`p-2 rounded w-full mt-4 transition font-semibold ${
+              isSubmitting
+                ? "bg-sky-500 text-white opacity-50 cursor-not-allowed"
+                : showSuccess
+                ? "bg-green-500 text-white hover:bg-green-600"
+                : "bg-sky-500 text-white hover:bg-sky-700"
             }`}
           >
             {isSubmitting ? (
               <Loader2 className="animate-spin mx-auto" size={24} />
+            ) : showSuccess ? (
+              "✔ Published!"
             ) : (
               "Publish"
             )}

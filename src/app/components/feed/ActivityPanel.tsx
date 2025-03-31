@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { getRecentlyVisited } from "@/app/api/actions/getRecentlyVisited";
+import { User as UserIcon } from "lucide-react";
 
 interface User {
   id: string;
@@ -26,7 +27,9 @@ export default function ActivityPanel() {
   // const [onlineUsers, setOnlineUsers] = useState<User[]>([]);
 
   // Active list
-  const [activeList, setActiveList] = useState<"recentlyVisited" | "online">("recentlyVisited");
+  const [activeList, setActiveList] = useState<"recentlyVisited" | "online">(
+    "recentlyVisited"
+  );
 
   // Fetch latest visited users
   useEffect(() => {
@@ -67,7 +70,9 @@ export default function ActivityPanel() {
         <button
           onClick={() => handleListChange("online")}
           className={`p-2 px-4 rounded-full text-sky-900 transition-all duration-300 hover:text-white hover:bg-sky-400 
-            ${activeList === "online" ? "bg-sky-400 text-white" : "bg-stone-200"}`}
+            ${
+              activeList === "online" ? "bg-sky-400 text-white" : "bg-stone-200"
+            }`}
         >
           Online 25
         </button>
@@ -76,7 +81,11 @@ export default function ActivityPanel() {
         <button
           onClick={() => handleListChange("recentlyVisited")}
           className={`p-2 px-4 ml-4 rounded-full text-sky-900 transition-all duration-300 hover:text-white hover:bg-sky-400 
-            ${activeList === "recentlyVisited" ? "bg-sky-400 text-white" : "bg-stone-200"}`}
+            ${
+              activeList === "recentlyVisited"
+                ? "bg-sky-400 text-white"
+                : "bg-stone-200"
+            }`}
         >
           Recently Visited
         </button>
@@ -103,14 +112,18 @@ export default function ActivityPanel() {
                 href={`/profile/${user.name}/${user.hashtag}`}
                 className="flex flex-col items-center relative transition-all duration-300 hover:scale-[1.1]"
               >
-                <div className="w-[50px] h-[50px] rounded-full overflow-hidden">
-                  <Image
-                    src={user.avatarPhoto || "/images/avatarPlaceholder.png"}
-                    alt={`${user.name}'s avatar`}
-                    width={50}
-                    height={50}
-                    className="object-cover rounded-full border-2 border-white"
-                  />
+                <div className="w-[50px] h-[50px] rounded-full overflow-hidden flex items-center justify-center bg-gray-200 border-2 border-white">
+                  {user.avatarPhoto ? (
+                    <Image
+                      src={user.avatarPhoto}
+                      alt={`${user.name}'s avatar`}
+                      width={50}
+                      height={50}
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    <UserIcon className="w-6 h-6 text-gray-500" />
+                  )}
                 </div>
                 <p className="text-sm text-sky-900 mt-2">{user.name}</p>
               </Link>

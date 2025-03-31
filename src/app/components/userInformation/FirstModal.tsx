@@ -39,13 +39,13 @@ export default function FirstModal({
 
   // Show sorted tags on focus and filter while typing
   useEffect(() => {
-    const cleanedInput = tagInput.trim().replace(/^#+/, ""); // Remove "#" from input
-
+    const cleanedInput = tagInput.trim().replace(/^#+/, "");
+  
     if (cleanedInput.length === 0) {
-      setSuggestedTags([]); // Do not fetch for data if input is empty
+      setSuggestedTags([]);
       return;
     }
-
+  
     const fetchTags = async () => {
       try {
         const response = await fetch(
@@ -53,17 +53,20 @@ export default function FirstModal({
         );
         const data = await response.json();
         if (data.success) {
-          setSuggestedTags(data.tags);
+          const filtered = data.tags.filter(
+            (tag: string) => !userData.selectedTags?.includes(tag)
+          );
+          setSuggestedTags(filtered);
         }
       } catch (error) {
         console.error("Failed to fetch tags:", error);
       }
     };
-
-    const delayDebounce = setTimeout(fetchTags, 200); // Delay fetch by 200ms
-
+  
+    const delayDebounce = setTimeout(fetchTags, 200);
     return () => clearTimeout(delayDebounce);
-  }, [tagInput]);
+  }, [tagInput, userData.selectedTags]);
+  
 
   // Add tag to the selected list
   const handleTagSelect = (tag: string) => {
@@ -72,8 +75,12 @@ export default function FirstModal({
         ...userData,
         selectedTags: [...(userData.selectedTags || []), tag],
       });
+  
+      setTagInput(""); // Clear input
+      setSuggestedTags((prev) => prev.filter((t) => t !== tag)); // Remove tag from the list
     }
   };
+  
 
   // Handle Enter key event
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

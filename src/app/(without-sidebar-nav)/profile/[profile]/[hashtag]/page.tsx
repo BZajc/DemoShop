@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { House, User} from "lucide-react";
+import { House, User } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
@@ -9,6 +9,11 @@ import TagsAsButtons from "@/app/components/profile/TagsAsButtons";
 import { addRecentlyVisited } from "@/app/api/actions/addRecentlyVisited";
 import UserPosts from "@/app/components/profile/UserPosts";
 import EditProfileModalLauncher from "@/app/components/profile/EditProfileModalLauncher";
+import ContactButton from "@/app/components/profile/ContactButton";
+import { getContactStatus } from "@/app/api/actions/contacts/getContactStatus";
+import FollowButton from "@/app/components/profile/FollowButton";
+import { isFollowing } from "@/app/api/actions/isFollowing";
+import { isUserOnline } from "@/lib/isUserOnline";
 
 export default async function ProfilePage({
   params,
@@ -39,6 +44,7 @@ export default async function ProfilePage({
       createdAt: true,
       realName: true,
       aboutMe: true,
+      lastSeenAt: true,
       posts: {
         select: {
           id: true,
@@ -68,6 +74,15 @@ export default async function ProfilePage({
     session?.user?.name === resolvedParams.profile &&
     session?.user?.hashtag === resolvedParams.hashtag;
 
+  // Handle what contact button should do
+  const contactStatus = await getContactStatus(user.id);
+
+  // Handle what follow button should do
+  const isUserFollowing = await isFollowing(user.id);
+
+  // is user online
+  const online = isUserOnline(user.lastSeenAt);
+
   return (
     <div className="p-4 animate-fade-in">
       <header className="flex items-center mt-4 mb-12 max-w-[1200px] mx-auto">
@@ -86,9 +101,13 @@ export default async function ProfilePage({
           {/* Left Top - Profile Info */}
           <div className="bg-white h-1/2 w-full rounded-3xl shadow-lg p-4 flex flex-col items-center justify-center text-center">
             {user.avatarPhoto ? (
-              <div className="w-[100px] h-[100px] rounded-full overflow-hidden mb-4">
+              <div
+                className={`w-[100px] h-[100px] rounded-full overflow-hidden mb-4 ${
+                  online ? "ring-4 ring-green-500" : ""
+                }`}
+              >
                 <Image
-                  src={user.avatarPhoto || "/images/avatarPlaceholder.png"}
+                  src={user.avatarPhoto}
                   alt={`${user.name}'s avatar`}
                   width={100}
                   height={100}
@@ -96,7 +115,11 @@ export default async function ProfilePage({
                 />
               </div>
             ) : (
-              <div className="w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mb-4">
+              <div
+                className={`w-[100px] h-[100px] rounded-full bg-gray-300 flex items-center justify-center mb-4 ${
+                  online ? "ring-4 ring-green-500" : ""
+                }`}
+              >
                 <User size={48} className="text-gray-500" />
               </div>
             )}
@@ -128,10 +151,14 @@ export default async function ProfilePage({
                 />
               ) : (
                 <>
-                  <button className="bg-gray-200 ...">
-                    Add to Contacts
-                  </button>
-                  <button className="bg-gray-200 ...">Message</button>
+                  <ContactButton
+                    profileUserId={user.id}
+                    initialStatus={contactStatus}
+                  />
+                  <FollowButton
+                    profileUserId={user.id}
+                    initialIsFollowing={isUserFollowing}
+                  />
                 </>
               )}
             </div>

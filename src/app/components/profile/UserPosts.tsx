@@ -14,7 +14,7 @@ export default function UserPosts({ posts }: UserPostsProps) {
   };
 
   return (
-    <div className="bg-white h-1/2 w-full rounded-3xl shadow-lg p-4 overflow-y-auto custom-scrollbar">
+    <div className="bg-white h-1/2 max-h-[400px] w-full rounded-3xl shadow-lg p-4 overflow-y-auto custom-scrollbar">
       <h2 className="text-lg font-semibold mb-2">Published Pictures</h2>
       {posts.length > 0 ? (
         <div className="grid grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4">

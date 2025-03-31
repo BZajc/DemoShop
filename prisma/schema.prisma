@@ -51,7 +51,7 @@ model User {
   selectedTags    UserTag[] @relation("UserSelectedTags")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  lastActive      DateTime @default(now())
+  lastSeenAt      DateTime?
   hasCompletedSetup Boolean @default(false)
 
   accounts        Account[]
@@ -67,6 +67,40 @@ model User {
   SuggestedTags SuggestedTags[]
   PostReactions PostReactions[]
   CommentReaction CommentReaction[]
+
+  sentContacts     Contact[]  @relation("SentContacts")
+  receivedContacts Contact[]  @relation("ReceivedContacts")
+  sentMessages     Message[]  @relation("SentMessages")
+  receivedMessages Message[]  @relation("ReceivedMessages")
+}
+
+enum ContactStatus {
+  pending
+  accepted
+}
+
+model Contact {
+  id         String         @id @default(cuid())
+  sender     User           @relation("SentContacts", fields: [senderId], references: [id])
+  senderId   String
+  receiver   User           @relation("ReceivedContacts", fields: [receiverId], references: [id])
+  receiverId String
+  status     ContactStatus  @default(pending)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@unique([senderId, receiverId])
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id])
+  senderId    String
+  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId  String
+  content     String
+  createdAt   DateTime @default(now())
+  viewedAt    DateTime?
 }
 
 model Follows {
