@@ -123,28 +123,6 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
     handleImageUpload(file);
   };
 
-  // Drag & Drop event handlers
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(false);
-    const file = event.dataTransfer.files[0] ?? null;
-    handleImageUpload(file);
-  };
-
   const validatePost = () => {
     const newErrors = {
       title: "",

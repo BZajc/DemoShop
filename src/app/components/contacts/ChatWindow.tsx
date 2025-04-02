@@ -109,7 +109,7 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
   useEffect(() => {
     if (!session?.user?.id || !selectedUserId) return;
 
-    const handleMessage = (payload: any) => {
+    const handleMessage = (payload: { new: Message }) => {
       const newMsg = payload.new as Message;
 
       const isCurrentChat =
@@ -226,10 +226,6 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
     const days = Math.floor(diff / 86400);
     return `${days} day${days > 1 ? "s" : ""} ago`;
   }
-
-  useEffect(() => {
-    console.log("contactUser.lastSeenAt:", contactUser.lastSeenAt);
-  }, [contactUser]);
   
   return (
     <div className="flex flex-col h-full relative">

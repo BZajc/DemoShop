@@ -6,7 +6,6 @@ import Image from "next/image";
 import { createComment } from "@/app/api/actions/createComment";
 import { getComments } from "@/app/api/actions/getComments";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
-import { useSession } from "next-auth/react";
 
 interface Comment {
   id: string;
@@ -46,11 +45,10 @@ export default function Comments({ postId }: CommentsProps) {
 
   const [allComments, setAllComments] = useState<Comment[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingMore, setLoadingMore] = useState(false);
 
   const take = 10;
-
-  const { data: session } = useSession();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
