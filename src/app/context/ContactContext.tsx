@@ -9,8 +9,13 @@ interface ContactContextType {
 
 const ContactContext = createContext<ContactContextType | undefined>(undefined);
 
-export function ContactProvider({ children }: { children: ReactNode }) {
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+interface ContactProviderProps {
+  children: ReactNode;
+  selectedUserId?: string | null;
+}
+
+export function ContactProvider({ children, selectedUserId: initialId }: ContactProviderProps) {
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(initialId ?? null);
 
   return (
     <ContactContext.Provider value={{ selectedUserId, setSelectedUserId }}>

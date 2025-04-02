@@ -7,6 +7,10 @@ import { getSupabaseMessagesWithUser } from "@/app/api/actions/contacts/getSupab
 import MessageInput from "./MessageInput";
 import { supabase } from "@/lib/supabaseClient";
 import { sendSupabaseMessage } from "@/app/api/actions/contacts/sendSupabaseMessage";
+import Image from "next/image";
+import { User as UserIcon } from "lucide-react";
+import Link from "next/link";
+import { getAvatars } from "@/app/api/actions/contacts/getAvatars";
 
 interface Message {
   id: string;
@@ -18,7 +22,18 @@ interface Message {
   isPending?: boolean;
 }
 
-export default function ChatWindow() {
+interface ChatWindowProps {
+  contactUser: {
+    id: string;
+    name: string;
+    hashtag: string;
+    realName: string | null;
+    avatarPhoto: string | null;
+    lastSeenAt: string | null;
+  };
+}
+
+export default function ChatWindow({ contactUser }: ChatWindowProps) {
   const { selectedUserId } = useContactContext();
   const { data: session } = useSession();
 
@@ -27,6 +42,9 @@ export default function ChatWindow() {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const [userAvatars, setUserAvatars] = useState<Record<string, string | null>>(
+    {}
+  );
 
   const topRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -74,7 +92,20 @@ export default function ChatWindow() {
     }
   }, [page, loadMessages]);
 
-  // Handle realtime message updates
+  useEffect(() => {
+    const fetchAvatars = async () => {
+      if (!session?.user?.id || !selectedUserId) return;
+
+      const avatars = await getAvatars([session.user.id, selectedUserId]);
+      const avatarMap = Object.fromEntries(
+        avatars.map((u) => [u.id, u.avatarPhoto || null])
+      );
+      setUserAvatars(avatarMap);
+    };
+
+    fetchAvatars();
+  }, [selectedUserId, session?.user?.id]);
+
   useEffect(() => {
     if (!session?.user?.id || !selectedUserId) return;
 
@@ -136,12 +167,6 @@ export default function ChatWindow() {
     };
   }, [session?.user?.id, selectedUserId]);
 
-  useEffect(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
-
   const handleScroll = () => {
     if (!containerRef.current) return;
     const { scrollTop } = containerRef.current;
@@ -167,6 +192,13 @@ export default function ChatWindow() {
 
     setMessages((prev) => [...prev, newMessage]);
 
+    requestAnimationFrame(() => {
+      containerRef.current?.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    });
+
     await sendSupabaseMessage(selectedUserId, content, session.user.id);
   };
 
@@ -178,8 +210,62 @@ export default function ChatWindow() {
     );
   }
 
+  function formatStatus(lastSeenAt: string | null): string {
+    if (!lastSeenAt) return "Offline";
+
+    const last = new Date(lastSeenAt);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - last.getTime()) / 1000);
+
+    if (diff < 300) return "Online";
+
+    if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+
+    if (diff < 86400) return `${Math.floor(diff / 3600)} h ago`;
+
+    const days = Math.floor(diff / 86400);
+    return `${days} day${days > 1 ? "s" : ""} ago`;
+  }
+
+  useEffect(() => {
+    console.log("contactUser.lastSeenAt:", contactUser.lastSeenAt);
+  }, [contactUser]);
+  
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+      <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-white p-2 rounded-xl shadow">
+        <Link
+          href={`/profile/${contactUser.name}/${contactUser.hashtag}`}
+          className="flex items-center gap-3 p-2 bg-white rounded-xl shadow hover:bg-gray-50 transition"
+        >
+          {contactUser.avatarPhoto ? (
+            <Image
+              src={contactUser.avatarPhoto}
+              alt={`${contactUser.name}'s avatar`}
+              width={40}
+              height={40}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+              <UserIcon className="text-gray-500 w-5 h-5" />
+            </div>
+          )}
+          <div>
+            <div className="flex flex-col">
+              <p className="font-semibold text-sky-900 hover:underline">
+                @{contactUser.name}
+              </p>
+              <p className="text-gray-400 text-xs">
+                {formatStatus(contactUser.lastSeenAt)}
+              </p>
+            </div>
+            {contactUser.realName && (
+              <p className="text-gray-500 text-sm">{contactUser.realName}</p>
+            )}
+          </div>
+        </Link>
+      </div>
       <div
         className="flex-1 overflow-y-auto p-4 space-y-2"
         onScroll={handleScroll}
@@ -193,25 +279,33 @@ export default function ChatWindow() {
             {messages.map((msg) => {
               const isMine = msg.sender_id === session?.user?.id;
               const isPending = msg.isPending;
+              const avatarUrl = userAvatars[msg.sender_id];
 
               return (
                 <div
                   key={msg.id}
-                  className={`flex items-end gap-2 ${
+                  className={`flex items-start gap-2 ${
                     isMine ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {!isMine && (
-                    <img
-                      src={`/api/avatar/${msg.sender_id}`} // lub `msg.sender.avatarPhoto` jeśli masz
-                      alt="avatar"
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                  )}
+                  {!isMine &&
+                    (avatarUrl ? (
+                      <Image
+                        src={avatarUrl}
+                        alt="avatar"
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+                        <UserIcon className="text-gray-500 w-4 h-4" />
+                      </div>
+                    ))}
 
-                  <div>
+                  <div className="max-w-[75%]">
                     <div
-                      className={`max-w-[75%] px-4 py-2 rounded-xl text-sm shadow ${
+                      className={`break-words px-4 py-2 rounded-xl text-sm shadow ${
                         isMine
                           ? isPending
                             ? "bg-sky-200 text-white opacity-60"
@@ -226,21 +320,61 @@ export default function ChatWindow() {
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-gray-400 mt-1">
-                      {new Date(msg.created_at).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                    {/* Show message time. Add month and year if it's different from the previous message. */}
+                    <p className="text-[10px] text-gray-400 mt-1 text-right">
+                      {(() => {
+                        const date = new Date(msg.created_at);
+                        const now = new Date();
+
+                        const day = date.getDate().toString().padStart(2, "0");
+                        const month = (date.getMonth() + 1)
+                          .toString()
+                          .padStart(2, "0");
+                        const year = date.getFullYear();
+                        const hour = date
+                          .getHours()
+                          .toString()
+                          .padStart(2, "0");
+                        const minute = date
+                          .getMinutes()
+                          .toString()
+                          .padStart(2, "0");
+
+                        let formatted = "";
+
+                        if (
+                          year !== now.getFullYear() ||
+                          month !==
+                            (now.getMonth() + 1).toString().padStart(2, "0") ||
+                          day !== now.getDate().toString().padStart(2, "0")
+                        ) {
+                          formatted += `${day}.${month}`;
+                          if (year !== now.getFullYear()) {
+                            formatted += `.${year}`;
+                          }
+                          formatted += ", ";
+                        }
+
+                        formatted += `${hour}:${minute}`;
+                        return formatted;
+                      })()}
                     </p>
                   </div>
 
-                  {isMine && (
-                    <img
-                      src={`/api/avatar/${session.user.id}`} // lub `session.user.image` jeśli masz
-                      alt="avatar"
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                  )}
+                  {isMine &&
+                    (userAvatars[session.user.id] ? (
+                      <Image
+                        src={userAvatars[session.user.id] as string}
+                        alt="avatar"
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+                        <UserIcon className="text-gray-500 w-4 h-4" />
+                      </div>
+                    ))}
                 </div>
               );
             })}

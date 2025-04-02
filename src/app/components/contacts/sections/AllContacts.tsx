@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { getAllContacts } from "@/app/api/actions/contacts/getAllContacts";
-import { useContactContext } from "@/app/context/ContactContext";
 import Image from "next/image";
 import { User } from "lucide-react";
 import { isUserOnline } from "@/lib/isUserOnline";
+import { useRouter } from "next/navigation";
 
 interface ContactUser {
   id: string;
@@ -17,7 +17,7 @@ interface ContactUser {
 
 export default function AllContacts() {
   const [users, setUsers] = useState<ContactUser[]>([]);
-  const { setSelectedUserId } = useContactContext();
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchContacts() {
@@ -39,7 +39,9 @@ export default function AllContacts() {
           return (
             <div
               key={user.id}
-              onClick={() => setSelectedUserId(user.id)}
+              onClick={() =>
+                router.push(`/contacts/${user.name}/${user.hashtag}`)
+              }
               className="flex items-center gap-4 p-2 rounded-xl hover:bg-sky-100 transition-all cursor-pointer"
             >
               <div className="relative w-[50px] h-[50px]">

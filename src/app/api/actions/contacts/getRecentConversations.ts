@@ -1,62 +1,72 @@
 "use server";
 
 import { auth } from "@/lib/auth";
+import { supabase } from "@/lib/supabaseClient";
 import prisma from "@/lib/prisma";
 
-export async function getRecentConversations() {
+type RecentConversation = {
+  user: {
+    id: string;
+    name: string;
+    hashtag: string | null;
+    realName: string | null;
+    avatarPhoto: string | null;
+  };
+  message: {
+    content: string;
+    created_at: string;
+  };
+};
+
+export async function getRecentConversations(): Promise<RecentConversation[]> {
   const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return [];
 
-  if (!session?.user?.id) {
-    return [];
-  }
+  const { data: messages, error } = await supabase
+    .from("Message")
+    .select("*")
+    .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+    .order("created_at", { ascending: false })
+    .limit(50);
 
-  const userId = session.user.id;
+  if (error || !messages) return [];
 
-  // Get 10 latest messages
-  const messages = await prisma.message.findMany({
-    where: {
-      OR: [
-        { senderId: userId },
-        { receiverId: userId },
-      ],
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    include: {
-      sender: {
-        select: {
-          id: true,
-          name: true,
-          hashtag: true,
-          avatarPhoto: true,
-          lastSeenAt: true,
-        },
-      },
-      receiver: {
-        select: {
-          id: true,
-          name: true,
-          hashtag: true,
-          avatarPhoto: true,
-          lastSeenAt: true,
-        },
-      },
-    },
-    take: 100,
-  });
-
-  // Map unique conversations 
-  const uniqueMap = new Map<string, typeof messages[0]>();
+  const seen = new Set<string>();
+  const recentMap: Map<string, typeof messages[number]> = new Map();
 
   for (const msg of messages) {
-    const otherUser = msg.senderId === userId ? msg.receiver : msg.sender;
+    const otherUserId =
+      msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
 
-    if (!uniqueMap.has(otherUser.id)) {
-      uniqueMap.set(otherUser.id, msg);
+    if (!seen.has(otherUserId)) {
+      seen.add(otherUserId);
+      recentMap.set(otherUserId, msg);
     }
   }
 
-  // Return 10 latest conversations
-  return Array.from(uniqueMap.values()).slice(0, 10);
+  const recentUserIds = Array.from(recentMap.keys()).slice(0, 10);
+
+  const users = await prisma.user.findMany({
+    where: { id: { in: recentUserIds } },
+    select: {
+      id: true,
+      name: true,
+      hashtag: true,
+      realName: true,
+      avatarPhoto: true,
+    },
+  });
+
+  const userMap = new Map(users.map((u) => [u.id, u]));
+
+  const result: RecentConversation[] = recentUserIds.map((uid) => ({
+    user: userMap.get(uid)!,
+    message: {
+      content: recentMap.get(uid)!.content,
+      created_at: recentMap.get(uid)!.created_at,
+    },
+  }));
+
+  return result;
 }

@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { getOnlineContacts } from "@/app/api/actions/contacts/getOnlineContacts";
-import { useContactContext } from "@/app/context/ContactContext";
 import Image from "next/image";
 import { User } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface OnlineUser {
   id: string;
@@ -16,7 +16,8 @@ interface OnlineUser {
 
 export default function OnlineUsers() {
   const [users, setUsers] = useState<OnlineUser[]>([]);
-  const { setSelectedUserId } = useContactContext();
+
+  const router = useRouter()
 
   useEffect(() => {
     async function fetchOnlineUsers() {
@@ -35,7 +36,7 @@ export default function OnlineUsers() {
         users.map((user) => (
           <div
             key={user.id}
-            onClick={() => setSelectedUserId(user.id)}
+            onClick={() => router.push(`/contacts/${user.name}/${user.hashtag}`)}
             className="flex items-center gap-4 p-2 rounded-xl hover:bg-sky-100 transition-all cursor-pointer"
           >
             <div className="relative w-[50px] h-[50px]">
