@@ -1,4 +1,4 @@
-import FeedSidebar from "../components/other/NotificationSidebar";
+import FeedSidebar from "../components/other/FollowSideBar";
 import SidebarNav from "../components/navigation/SidebarNav";
 
 export default function WithSidebarLayout({

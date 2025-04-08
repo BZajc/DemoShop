@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { X, UploadCloud, Loader2 } from "lucide-react";
 import { createPost } from "@/app/api/actions/createPost";
+import { useRouter } from "next/navigation";
 
 interface CreatePostProps {
   setShowAddPost: (value: boolean) => void;
@@ -26,6 +27,8 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  const router = useRouter();
 
   // Fetch tags from database and sort them alphabetically
   useEffect(() => {
@@ -103,14 +106,29 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
 
   // Handle file selection (from input or drag & drop)
   const handleImageUpload = (file: File | null) => {
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = (e) => setImagePreview(e.target?.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
 
-      setImageFile(file);
+    if (!file.type.startsWith("image/")) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        image: "Only image files are allowed.",
+      }));
+      return;
     }
 
+    if (file.size > 2 * 1024 * 1024) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        image: "Image size must not exceed 2MB.",
+      }));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => setImagePreview(e.target?.result as string);
+    reader.readAsDataURL(file);
+
+    setImageFile(file);
     setErrors((prevErrors) => ({
       ...prevErrors,
       image: "",
@@ -175,13 +193,12 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
       try {
         const result = await createPost(formData);
 
-        if (result.success) {
-          setShowSuccess(true); // Set success state to change button text
-
+        if (result.success && result.post) {
+          setShowSuccess(true);
           setTimeout(() => {
             setShowSuccess(false);
-            setShowAddPost(false);
-          }, 2000);
+            router.push(`/post/${result.post.id}`);
+          }, 1500);
         } else {
           console.error("Failed to create post:", result.error);
         }

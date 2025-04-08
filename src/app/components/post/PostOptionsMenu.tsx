@@ -41,14 +41,11 @@ export default function PostOptionsMenu({ authorId }: PostOptionsMenuProps) {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg z-50">
           <ul className="py-1">
+            <li className="px-4 py-2 hover:bg-sky-100 cursor-pointer">
+              Add To Collection
+            </li>
             {!isAuthor && (
               <>
-                <li className="px-4 py-2 hover:bg-sky-100 cursor-pointer">
-                  Interested
-                </li>
-                <li className="px-4 py-2 hover:bg-sky-100 cursor-pointer">
-                  Not Interested
-                </li>
                 <li className="px-4 py-2 hover:bg-sky-100 cursor-pointer">
                   Report
                 </li>

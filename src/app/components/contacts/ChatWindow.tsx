@@ -226,10 +226,10 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
     const days = Math.floor(diff / 86400);
     return `${days} day${days > 1 ? "s" : ""} ago`;
   }
-  
+
   return (
     <div className="flex flex-col h-full relative">
-      <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-white p-2 rounded-xl shadow">
+      <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-white p-2 rounded-xl shadow transition-opacity hover:opacity-60">
         <Link
           href={`/profile/${contactUser.name}/${contactUser.hashtag}`}
           className="flex items-center gap-3 p-2 bg-white rounded-xl shadow hover:bg-gray-50 transition"
@@ -262,6 +262,7 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
           </div>
         </Link>
       </div>
+
       <div
         className="flex-1 overflow-y-auto p-4 space-y-2"
         onScroll={handleScroll}

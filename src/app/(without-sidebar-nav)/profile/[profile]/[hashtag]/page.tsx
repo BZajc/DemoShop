@@ -152,8 +152,10 @@ export default async function ProfilePage({
               ) : (
                 <>
                   <ContactButton
-                    profileUserId={user.id}
                     initialStatus={contactStatus}
+                    profileUserId={user.id}
+                    profileUserName={user.name}
+                    profileUserHashtag={user.hashtag ?? ""}
                   />
                   <FollowButton
                     profileUserId={user.id}

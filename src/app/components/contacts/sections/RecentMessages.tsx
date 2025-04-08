@@ -59,7 +59,7 @@ export default function RecentMessages() {
             }
             className="flex items-center gap-4 p-2 rounded-xl hover:bg-sky-100 transition-all cursor-pointer"
           >
-            <div className="relative w-[50px] h-[50px]">
+            <div className="relative min-w-[50px] h-[50px]">
               {user.avatarPhoto ? (
                 <Image
                   src={user.avatarPhoto}

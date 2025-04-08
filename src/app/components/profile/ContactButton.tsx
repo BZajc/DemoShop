@@ -5,24 +5,29 @@ import { sendContactRequest } from "@/app/api/actions/contacts/sendContactReques
 import { cancelContactRequest } from "@/app/api/actions/contacts/cancelContactRequest";
 import { acceptContactRequest } from "@/app/api/actions/contacts/acceptContactRequest";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type ContactStatusType = "none" | "invited" | "received" | "accepted";
 
 export default function ContactButton({
   initialStatus,
   profileUserId,
+  profileUserName,
+  profileUserHashtag,
 }: {
   initialStatus: ContactStatusType;
   profileUserId: string;
+  profileUserName: string;
+  profileUserHashtag: string;
 }) {
+  const router = useRouter();
   const [status, setStatus] = useState<ContactStatusType>(initialStatus);
   const [isLoading, setIsLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const handleClick = () => {
-    setIsLoading(true); // start manual loading
+    setIsLoading(true);
     const MIN_LOADING_TIME = 500;
-
     const start = Date.now();
 
     startTransition(async () => {
@@ -37,7 +42,7 @@ export default function ContactButton({
           await acceptContactRequest(profileUserId);
           setStatus("accepted");
         } else if (status === "accepted") {
-          console.log("Open chat");
+          router.push(`/contacts/${profileUserName}/${profileUserHashtag}`);
         }
       } catch (err) {
         console.error("Error in contact action:", err);

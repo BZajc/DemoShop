@@ -8,6 +8,7 @@ import {
   Images,
   Settings,
   Github,
+  Diamond
 } from "lucide-react";
 
 const iconsMap = {
@@ -17,6 +18,7 @@ const iconsMap = {
   collections: Images,
   settings: Settings,
   github: Github,
+  diamond: Diamond
 };
 
 interface ActiveLinkProps {

@@ -31,6 +31,11 @@ export default async function SidebarNav() {
             label="Collections"
             iconName="collections"
           />
+          <ActiveLink
+            href="/follows"
+            label="Follows"
+            iconName="diamond"
+          />
           <ActiveLink href="/settings" label="Settings" iconName="settings" />
           <ActiveLink href="/settings" label="Github Docs" iconName="github" />
         </ul>
