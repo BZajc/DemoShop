@@ -1,6 +1,5 @@
 "use client";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import LoginForm from "@/app/components/sign/LoginForm";
 import RegisterForm from "@/app/components/sign/RegisterForm";
@@ -121,13 +120,12 @@ export default function SignForm() {
 
         {/* Displayed only on mobile */}
         <div className="flex flex-col p-4">
-          <Button
-            variant="default"
+          <button
             className="text-2xl rounded-full border-2 border-white m-2 md:hidden"
             onClick={() => scrollToForm()}
           >
             Get Started
-          </Button>
+          </button>
         </div>
       </div>
       {/* Second Container */}

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useContactContext } from "@/app/context/ContactContext";
 import { useSession } from "next-auth/react";
 import { getSupabaseMessagesWithUser } from "@/app/api/actions/contacts/getSupabaseMessagesWithUser";
+import { getContactStatus } from "@/app/api/actions/contacts/getContactStatus";
 import MessageInput from "./MessageInput";
 import { supabase } from "@/lib/supabaseClient";
 import { sendSupabaseMessage } from "@/app/api/actions/contacts/sendSupabaseMessage";
@@ -42,9 +43,8 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  const [userAvatars, setUserAvatars] = useState<Record<string, string | null>>(
-    {}
-  );
+  const [userAvatars, setUserAvatars] = useState<Record<string, string | null>>({});
+  const [contactStatus, setContactStatus] = useState<"accepted" | "pending" | "invited" | "received" | "none" | null>(null);
 
   const topRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -68,9 +68,8 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
         const all = [...newMessages, ...prev];
         const map = new Map<string, Message>();
         all.forEach((msg) => map.set(msg.id, msg));
-        return Array.from(map.values()).sort(
-          (a, b) =>
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        return Array.from(map.values()).sort((a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         );
       });
       setPage((prev) => prev + 1);
@@ -84,6 +83,7 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
     setMessages([]);
     setPage(0);
     setHasMore(true);
+    setContactStatus(null);
   }, [selectedUserId]);
 
   useEffect(() => {
@@ -95,14 +95,10 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
   useEffect(() => {
     const fetchAvatars = async () => {
       if (!session?.user?.id || !selectedUserId) return;
-
       const avatars = await getAvatars([session.user.id, selectedUserId]);
-      const avatarMap = Object.fromEntries(
-        avatars.map((u) => [u.id, u.avatarPhoto || null])
-      );
+      const avatarMap = Object.fromEntries(avatars.map((u) => [u.id, u.avatarPhoto || null]));
       setUserAvatars(avatarMap);
     };
-
     fetchAvatars();
   }, [selectedUserId, session?.user?.id]);
 
@@ -113,10 +109,8 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
       const newMsg = payload.new as Message;
 
       const isCurrentChat =
-        (newMsg.sender_id === selectedUserId &&
-          newMsg.receiver_id === session?.user?.id) ||
-        (newMsg.receiver_id === selectedUserId &&
-          newMsg.sender_id === session?.user?.id);
+        (newMsg.sender_id === selectedUserId && newMsg.receiver_id === session.user.id) ||
+        (newMsg.receiver_id === selectedUserId && newMsg.sender_id === session.user.id);
 
       if (!isCurrentChat) return;
 
@@ -130,42 +124,40 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
               msg.sender_id === newMsg.sender_id
             )
         );
-
         const alreadyExists = filtered.some((msg) => msg.id === newMsg.id);
         if (alreadyExists) return filtered;
-
         return [...filtered, newMsg];
       });
     };
 
     const channel = supabase
       .channel("messages-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "Message",
-          filter: `receiver_id=eq.${session.user.id}`,
-        },
-        handleMessage
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "Message",
-          filter: `sender_id=eq.${session.user.id}`,
-        },
-        handleMessage
-      )
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "Message",
+        filter: `receiver_id=eq.${session.user.id}`,
+      }, handleMessage)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "Message",
+        filter: `sender_id=eq.${session.user.id}`,
+      }, handleMessage)
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
   }, [session?.user?.id, selectedUserId]);
+
+  useEffect(() => {
+    if (!selectedUserId) return;
+    (async () => {
+      const status = await getContactStatus(selectedUserId);
+      setContactStatus(status);
+    })();
+  }, [selectedUserId]);
 
   const handleScroll = () => {
     if (!containerRef.current) return;
@@ -177,7 +169,6 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
 
   const handleSendMessage = async (content: string) => {
     if (!session?.user?.id || !selectedUserId) return;
-
     const tempId = `temp-${Date.now()}`;
 
     const newMessage: Message = {
@@ -191,14 +182,12 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
     };
 
     setMessages((prev) => [...prev, newMessage]);
-
     requestAnimationFrame(() => {
       containerRef.current?.scrollTo({
         top: containerRef.current.scrollHeight,
         behavior: "smooth",
       });
     });
-
     await sendSupabaseMessage(selectedUserId, content, session.user.id);
   };
 
@@ -212,23 +201,19 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
 
   function formatStatus(lastSeenAt: string | null): string {
     if (!lastSeenAt) return "Offline";
-
     const last = new Date(lastSeenAt);
     const now = new Date();
     const diff = Math.floor((now.getTime() - last.getTime()) / 1000);
-
     if (diff < 300) return "Online";
-
     if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
-
     if (diff < 86400) return `${Math.floor(diff / 3600)} h ago`;
-
     const days = Math.floor(diff / 86400);
     return `${days} day${days > 1 ? "s" : ""} ago`;
   }
 
   return (
     <div className="flex flex-col h-full relative">
+      {/* Header */}
       <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-white p-2 rounded-xl shadow transition-opacity hover:opacity-60">
         <Link
           href={`/profile/${contactUser.name}/${contactUser.hashtag}`}
@@ -249,12 +234,8 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
           )}
           <div>
             <div className="flex flex-col">
-              <p className="font-semibold text-sky-900 hover:underline">
-                @{contactUser.name}
-              </p>
-              <p className="text-gray-400 text-xs">
-                {formatStatus(contactUser.lastSeenAt)}
-              </p>
+              <p className="font-semibold text-sky-900 hover:underline">@{contactUser.name}</p>
+              <p className="text-gray-400 text-xs">{formatStatus(contactUser.lastSeenAt)}</p>
             </div>
             {contactUser.realName && (
               <p className="text-gray-500 text-sm">{contactUser.realName}</p>
@@ -263,11 +244,8 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
         </Link>
       </div>
 
-      <div
-        className="flex-1 overflow-y-auto p-4 space-y-2"
-        onScroll={handleScroll}
-        ref={containerRef}
-      >
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-2" onScroll={handleScroll} ref={containerRef}>
         <div ref={topRef} />
         {!loading && hasLoadedOnce && messages.length === 0 ? (
           <p className="text-gray-500">No messages yet</p>
@@ -277,105 +255,43 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
               const isMine = msg.sender_id === session?.user?.id;
               const isPending = msg.isPending;
               const avatarUrl = userAvatars[msg.sender_id];
-
               return (
-                <div
-                  key={msg.id}
-                  className={`flex items-start gap-2 ${
-                    isMine ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  {!isMine &&
-                    (avatarUrl ? (
-                      <Image
-                        src={avatarUrl}
-                        alt="avatar"
-                        width={32}
-                        height={32}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
+                <div key={msg.id} className={`flex items-start gap-2 ${isMine ? "justify-end" : "justify-start"}`}>
+                  {!isMine && (
+                    avatarUrl ? (
+                      <Image src={avatarUrl} alt="avatar" width={32} height={32} className="w-8 h-8 rounded-full object-cover" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
                         <UserIcon className="text-gray-500 w-4 h-4" />
                       </div>
-                    ))}
-
+                    )
+                  )}
                   <div className="max-w-[75%]">
-                    <div
-                      className={`break-words px-4 py-2 rounded-xl text-sm shadow ${
-                        isMine
-                          ? isPending
-                            ? "bg-sky-200 text-white opacity-60"
-                            : "bg-sky-400 text-white"
-                          : "bg-gray-200 text-sky-900"
-                      }`}
-                    >
+                    <div className={`break-words px-4 py-2 rounded-xl text-sm shadow ${
+                      isMine ? isPending ? "bg-sky-200 text-white opacity-60" : "bg-sky-400 text-white" : "bg-gray-200 text-sky-900"
+                    }`}>
                       {msg.content}
-                      {isPending && (
-                        <span className="block text-[10px] text-white mt-1">
-                          Sending...
-                        </span>
-                      )}
+                      {isPending && <span className="block text-[10px] text-white mt-1">Sending...</span>}
                     </div>
-                    {/* Show message time. Add month and year if it's different from the previous message. */}
                     <p className="text-[10px] text-gray-400 mt-1 text-right">
-                      {(() => {
-                        const date = new Date(msg.created_at);
-                        const now = new Date();
-
-                        const day = date.getDate().toString().padStart(2, "0");
-                        const month = (date.getMonth() + 1)
-                          .toString()
-                          .padStart(2, "0");
-                        const year = date.getFullYear();
-                        const hour = date
-                          .getHours()
-                          .toString()
-                          .padStart(2, "0");
-                        const minute = date
-                          .getMinutes()
-                          .toString()
-                          .padStart(2, "0");
-
-                        let formatted = "";
-
-                        if (
-                          year !== now.getFullYear() ||
-                          month !==
-                            (now.getMonth() + 1).toString().padStart(2, "0") ||
-                          day !== now.getDate().toString().padStart(2, "0")
-                        ) {
-                          formatted += `${day}.${month}`;
-                          if (year !== now.getFullYear()) {
-                            formatted += `.${year}`;
-                          }
-                          formatted += ", ";
-                        }
-
-                        formatted += `${hour}:${minute}`;
-                        return formatted;
-                      })()}
+                      {new Date(msg.created_at + "Z").toLocaleTimeString(undefined, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </p>
                   </div>
-
-                  {isMine &&
-                    (userAvatars[session.user.id] ? (
-                      <Image
-                        src={userAvatars[session.user.id] as string}
-                        alt="avatar"
-                        width={32}
-                        height={32}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
+                  {isMine && (
+                    avatarUrl ? (
+                      <Image src={avatarUrl} alt="avatar" width={32} height={32} className="w-8 h-8 rounded-full object-cover" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
                         <UserIcon className="text-gray-500 w-4 h-4" />
                       </div>
-                    ))}
+                    )
+                  )}
                 </div>
               );
             })}
-
             <div ref={bottomRef} />
           </>
         )}
@@ -384,7 +300,14 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
         )}
       </div>
 
-      <MessageInput onSend={handleSendMessage} />
+      {/* Message Input or Blocked */}
+      {contactStatus === "accepted" ? (
+        <MessageInput onSend={handleSendMessage} />
+      ) : (
+        <div className="text-center text-gray-500 p-4">
+          This user is not in your contacts.
+        </div>
+      )}
     </div>
   );
 }

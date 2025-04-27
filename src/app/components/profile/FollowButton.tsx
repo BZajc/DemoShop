@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { followUser } from "@/app/api/actions/followUser";
+import { followUser } from "@/app/api/actions/follows/followUser";
 import { Loader2 } from "lucide-react";
 
 export default function FollowButton({

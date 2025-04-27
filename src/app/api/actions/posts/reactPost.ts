@@ -1,8 +1,7 @@
 "use server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/authOptions";
-
+import { authOptions } from "../../auth/authOptions";
 
 export async function reactPost(postId: string, action: "like" | "dislike") {
   // Get current user session
@@ -19,22 +18,22 @@ export async function reactPost(postId: string, action: "like" | "dislike") {
       where: {
         userId_postId: {
           userId: userId,
-          postId: postId
-        }
-      }
+          postId: postId,
+        },
+      },
     });
 
     if (existingReaction) {
       // If the same reaction, remove it (toggle off)
       if (existingReaction.reaction === action) {
         await prisma.postReactions.delete({
-          where: { id: existingReaction.id }
+          where: { id: existingReaction.id },
         });
       } else {
         // If different reaction, update it
         await prisma.postReactions.update({
           where: { id: existingReaction.id },
-          data: { reaction: action }
+          data: { reaction: action },
         });
       }
     } else {
@@ -43,8 +42,8 @@ export async function reactPost(postId: string, action: "like" | "dislike") {
         data: {
           userId: userId,
           postId: postId,
-          reaction: action
-        }
+          reaction: action,
+        },
       });
     }
 

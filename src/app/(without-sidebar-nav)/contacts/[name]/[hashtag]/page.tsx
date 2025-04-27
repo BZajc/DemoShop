@@ -38,7 +38,7 @@ export default async function ChatPage({
 
   return (
     <ContactProvider selectedUserId={user.id}>
-      <div className="h-screen max-h-screen flex flex-col">
+      <div className="h-screen max-h-screen flex flex-col animate-fade-in">
         <header className="flex items-center p-4 border-b border-gray-200">
           <Link
             href="/feed"

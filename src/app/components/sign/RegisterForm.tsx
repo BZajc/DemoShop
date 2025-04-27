@@ -1,7 +1,6 @@
 "use client";
 import { User, Lock, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { registerUser } from "../../api/actions/registerAction";
+import { registerUser } from "../../api/actions/account/registerAction";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -102,8 +101,9 @@ export default function RegisterForm({ handleFormChange }: RegisterFormProps) {
         {errors.confirmPassword && (
           <p className="text-red-500">{errors.confirmPassword}</p>
         )}
-        <Button
-          className="mx-auto rounded-full text-2xl border-sky-400 border-2 bg-white text-sky-400 hover:bg-black hover:text-white hover:border-black px-16"
+        <p className="text-center p-2 text-sky-900 text-sm">This app does not currently require email verification for faster testing purposes</p>
+        <button
+          className="mx-auto rounded-full text-2xl border-sky-400 border-2 bg-white text-sky-400 hover:bg-black hover:text-white hover:border-black px-16 py-1"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
@@ -111,7 +111,7 @@ export default function RegisterForm({ handleFormChange }: RegisterFormProps) {
           ) : (
             "Register"
           )}
-        </Button>
+        </button>
       </form>
 
       {/* Form Swap */}
@@ -119,13 +119,12 @@ export default function RegisterForm({ handleFormChange }: RegisterFormProps) {
       <p className="text-center text-2xl text-sky-400">
         Already have an account?
       </p>
-      <Button
-        variant="default"
-        className="mx-auto my-4 rounded-full text-2xl border-sky-400 border-2 bg-white text-sky-400 hover:bg-black hover:text-white hover:border-black"
+      <button
+        className="mx-auto my-4 px-2 py-1 rounded-full text-2xl border-sky-400 border-2 bg-white text-sky-400 hover:bg-black hover:text-white hover:border-black"
         onClick={() => handleFormChange(false)}
       >
         Log In Here
-      </Button>
+      </button>
     </div>
   );
 }

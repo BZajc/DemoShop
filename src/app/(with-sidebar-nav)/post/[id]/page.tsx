@@ -58,11 +58,6 @@ export default async function PostPage({ params }: PostPageProps) {
     <div className="max-w-4xl mx-auto p-6 text-white animate-fade-in flex flex-col">
       <header>
         <SearchHeaderWithPublishButton />
-        <button className="p-2 mt-2 rounded-full bg-sky-200 hover:bg-sky-400 hover:text-white transition-colors duration-300 text-sky-900">
-          <Link href={`/profile/${post.user.name}/${post.user.hashtag}`}>
-            @{post.user.name} profile
-          </Link>
-        </button>
         <h1 className="text-black text-2xl py-2">{post.title}</h1>
       </header>
       <div
@@ -81,7 +76,12 @@ export default async function PostPage({ params }: PostPageProps) {
               <p>Published {formattedDate}</p>
               <FeedFollow userId={post.user.id} />
             </div>
-            <PostOptionsMenu authorId={post.user.id} />
+            <PostOptionsMenu
+              authorId={post.user.id}
+              postId={post.id}
+              postTitle={post.title}
+              currentTags={post.tags.map(({ tag }) => tag.name)}
+            />
           </div>
 
           {/* Author Info */}
@@ -121,7 +121,7 @@ export default async function PostPage({ params }: PostPageProps) {
             {post.tags.map(({ tag }) => (
               <Link
                 key={tag.name}
-                href={`/tag/${tag.name}`}
+                href={`/search?query=${encodeURIComponent(tag.name)}`}
                 className="hover:text-sky-400 transition-all"
               >
                 {tag.name}
@@ -149,7 +149,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
           {/* Comments */}
           <div className="mt-6">
-          <Comments postId={post.id} />
+            <Comments postId={post.id} />
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { useOptimistic, startTransition } from "react";
-import { reactPost } from "@/app/api/actions/reactPost";
+import { reactPost } from "@/app/api/actions/posts/reactPost";
 import { useRouter } from "next/navigation";
 
 interface ReactionButtonsProps {
@@ -69,7 +69,7 @@ export default function ReactionButtons({
         }
       }
 
-    //   Optimistic update
+      //   Optimistic update
       setOptimisticReactions(newReaction);
 
       // Trigger Server Action

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { User as UserIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { getFollowedProfiles } from "@/app/api/actions/getFollowedProfiles";
+import { getFollowedProfiles } from "@/app/api/actions/follows/getFollowedProfiles";
 
 interface FollowedUser {
   id: string;
@@ -37,7 +37,7 @@ export default function FollowSideBar() {
   if (users.length === 0) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col items-center gap-4">
+    <div className="fixed top-4 right-4 flex flex-col items-center gap-4">
       {users.map((user) => (
         <Link
           key={user.id}

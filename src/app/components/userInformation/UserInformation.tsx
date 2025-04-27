@@ -3,10 +3,10 @@ import { useEffect, useState } from "react";
 import FirstModal from "./FirstModal";
 import SecondModal from "./SecondModal";
 import ThirdModal from "./ThirdModal";
-import { updateUserData } from "@/app/api/actions/updateUserData";
+import { updateUserData } from "@/app/api/actions/userData/updateUserData";
 import { X, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { completeUserSetup } from "@/app/api/actions/completeSetup";
+import { completeUserSetup } from "@/app/api/actions/userData/completeSetup";
 
 export interface UserData {
   name?: string;
@@ -32,7 +32,7 @@ export default function UserInformation(props: UserInformationProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
 
   const handleDataChange = (newData: UserData) => {
     setUserData((prev) => ({ ...prev, ...newData }));
@@ -81,7 +81,9 @@ export default function UserInformation(props: UserInformationProps) {
         setIsVisible(false);
         await completeUserSetup();
         console.log("User data updated successfully!", response.user);
-        router.push(`/profile/${response?.user?.name}/${response?.user?.hashtag}`);
+        router.push(
+          `/profile/${response?.user?.name}/${response?.user?.hashtag}`
+        );
       } else {
         console.error("Failed to update user data:", response.error);
       }

@@ -14,7 +14,7 @@ export default async function FeedPage() {
   : null;
 
   return (
-    <div className="flex">
+    <div className="flex animate-fade-in">
       <FeedMainContent />
       {!user?.hasCompletedSetup && <UserInformation />}
 

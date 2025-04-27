@@ -1,8 +1,10 @@
 "use server";
 import prisma from "@/lib/prisma";
 
-export async function getPosts() {
+export async function getPosts(skip = 0, take = 10) {
   const posts = await prisma.post.findMany({
+    skip,
+    take,
     orderBy: {
       createdAt: "desc"
     },
@@ -25,21 +27,20 @@ export async function getPosts() {
           }
         }
       },
-      reactions: true
+      reactions: true,
+      _count: { select: { comments: true } }
     }
   });
 
-  // Calculate likes and dislikes for each post
-  const formattedPosts = posts.map(post => {
-    const likes = post.reactions.filter((r: { reaction: string }) => r.reaction === 'like').length;
-    const dislikes = post.reactions.filter((r: { reaction: string }) => r.reaction === 'dislike').length;
-
+  return posts.map(post => {
+    const likes = post.reactions.filter((r: any) => r.reaction === 'like').length;
+    const dislikes = post.reactions.filter((r: any) => r.reaction === 'dislike').length;
+    const commentsCount = post._count.comments;
     return {
       ...post,
       likes,
-      dislikes
-    }
+      dislikes,
+      commentsCount,
+    };
   });
-
-  return formattedPosts;
 }

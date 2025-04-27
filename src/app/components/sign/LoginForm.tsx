@@ -1,7 +1,6 @@
 "use client";
 import { User, Lock, Github } from "lucide-react";
 import { signIn } from "next-auth/react";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -91,9 +90,9 @@ export default function LoginForm({ handleFormChange }: LoginFormProps) {
         {isSubmitting ? (
           <Loader2 className="animate-spin text-sky-400" size={24} />
         ) : (
-          <Button className="mx-auto rounded-full text-2xl border-sky-400 border-2 bg-white text-sky-400 hover:bg-black hover:text-white hover:border-black px-16">
+          <button className="mx-auto rounded-full text-2xl border-sky-400 border-2 bg-white text-sky-400 hover:bg-black hover:text-white hover:border-black px-16">
             Log In
-          </Button>
+          </button>
         )}
       </form>
 
@@ -106,15 +105,13 @@ export default function LoginForm({ handleFormChange }: LoginFormProps) {
           <Loader2 className="animate-spin text-sky-400" size={24} />
         ) : (
           <>
-            <Button
-              variant="default"
+            <button
               className="my-4 rounded-full w-16 h-12 flex items-center justify-center hover:text-black hover:bg-white hover:border-2 hover:border-black"
               onClick={() => signIn("github", { callbackUrl: "/" })}
             >
               <Github />
-            </Button>
-            <Button
-              variant="default"
+            </button>
+            <button
               className="my-4 rounded-full w-16 h-12 flex items-center justify-center hover:text-black hover:bg-white hover:border-2 hover:border-black"
             >
               <Image
@@ -123,7 +120,7 @@ export default function LoginForm({ handleFormChange }: LoginFormProps) {
                 width={24}
                 height={24}
               />
-            </Button>
+            </button>
           </>
         )}
       </div>
@@ -133,13 +130,12 @@ export default function LoginForm({ handleFormChange }: LoginFormProps) {
       <p className="text-center text-2xl text-sky-400">
         Don&apos;t have an account yet?
       </p>
-      <Button
-        variant="default"
+      <button
         className="mx-auto my-4 rounded-full text-2xl border-sky-400 border-2 bg-white text-sky-400 hover:bg-black hover:text-white hover:border-black"
         onClick={() => handleFormChange(true)}
       >
         Create Here
-      </Button>
+      </button>
     </div>
   );
 }

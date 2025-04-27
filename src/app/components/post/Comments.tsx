@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, Smile, User } from "lucide-react";
 import Image from "next/image";
-import { createComment } from "@/app/api/actions/createComment";
-import { getComments } from "@/app/api/actions/getComments";
+import { createComment } from "@/app/api/actions/posts/createComment";
+import { getComments } from "@/app/api/actions/posts/getComments";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 
 interface Comment {
@@ -16,7 +16,6 @@ interface Comment {
   userAvatar?: string | null;
   pending?: boolean; // only for optimistic UI
 }
-
 
 interface CommentsProps {
   postId: string;
@@ -76,7 +75,9 @@ export default function Comments({ postId }: CommentsProps) {
         ? [...fetched].sort(() => Math.random() - 0.5)
         : fetched;
 
-    setAllComments((prev) => (reset ? nextComments : [...prev, ...nextComments]));
+    setAllComments((prev) =>
+      reset ? nextComments : [...prev, ...nextComments]
+    );
     setHasMore(nextComments.length === take);
   };
 
@@ -91,7 +92,7 @@ export default function Comments({ postId }: CommentsProps) {
     try {
       await createComment({ postId, content: inputValue });
       setInputValue("");
-      await loadComments(true); // reload all comments (or you could just prepend one if API returned it)
+      await loadComments(true); // reload all comments
     } catch (error) {
       console.error(error);
       setError("Failed to submit comment. Try again.");
@@ -150,7 +151,7 @@ export default function Comments({ postId }: CommentsProps) {
                   </div>
                 )}
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-center text-xs text-gray-300">
                   <span className="font-semibold">
                     {comment.userName || "Anonymous"}
@@ -159,7 +160,9 @@ export default function Comments({ postId }: CommentsProps) {
                     <span>{timeAgo(comment.createdAt)}</span>
                   )}
                 </div>
-                <p className="text-sm text-white mt-1">{comment.content}</p>
+                <p className="text-sm text-white mt-1 whitespace-normal break-words">
+                  {comment.content}
+                </p>
               </div>
             </div>
           ))}

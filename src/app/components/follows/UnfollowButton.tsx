@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { followUser } from "@/app/api/actions/followUser";
+import { followUser } from "@/app/api/actions/follows/followUser";
 
 export default function UnfollowButton({
   userId,

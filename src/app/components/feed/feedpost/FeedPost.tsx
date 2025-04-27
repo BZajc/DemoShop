@@ -13,14 +13,12 @@ interface FeedPostProps {
 }
 
 export default function FeedPost({ post }: FeedPostProps) {
-  const { id, imageUrl, title, user, userId, tags, createdAt, reactions } = post;
+  const { id, imageUrl, title, user, userId, tags, createdAt, reactions } =
+    post;
   const formattedDate = new Date(createdAt).toLocaleString();
 
-  // Calculate likes and dislikes
   const likes = reactions.filter((r) => r.reaction === "like").length;
   const dislikes = reactions.filter((r) => r.reaction === "dislike").length;
-
-  // Calculate average rating
   const totalReactions = likes + dislikes;
   const likePercentage =
     totalReactions > 0 ? Math.round((likes / totalReactions) * 100) : 0;
@@ -35,20 +33,22 @@ export default function FeedPost({ post }: FeedPostProps) {
         backgroundRepeat: "no-repeat",
       }}
     >
-      {/* Background overlay */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-lg rounded-xl"></div>
 
       <div className="relative z-10 p-4">
-        {/* Post Header */}
         <div className="flex justify-between">
           <div className="flex items-center text-sm">
             <p>Published {formattedDate}</p>
-            <FeedFollow userId={userId}/>
+            <FeedFollow userId={userId} />
           </div>
-          <PostOptionsMenu authorId={userId} />
+          <PostOptionsMenu
+            authorId={userId}
+            postId={id}
+            postTitle={title}
+            currentTags={tags.map(({ tag }) => tag.name)}
+          />
         </div>
 
-        {/* Post data */}
         <div className="flex mt-4 items-center">
           <Link
             className="w-[40px] h-[40px] overflow-hidden rounded-full hover:scale-[1.1] transition-all duration-300 relative"
@@ -80,12 +80,11 @@ export default function FeedPost({ post }: FeedPostProps) {
 
         <div className="w-[90%] border-b-2 border-white mx-auto mt-4 mb-2"></div>
 
-        {/* Tags */}
         <div className="flex gap-2 ml-4">
           {tags.map(({ tag }) => (
             <Link
               key={tag.name}
-              href={`/tag/${tag.name}`}
+              href={`/search?query=${encodeURIComponent(tag.name)}`}
               className="duration-300 transition-all hover:text-sky-400"
             >
               {tag.name}
@@ -93,9 +92,8 @@ export default function FeedPost({ post }: FeedPostProps) {
           ))}
         </div>
 
-        {/* Post Picture */}
         <div className="relative w-full h-[300px] mt-4">
-          <Link href={`post/${post.id}`}>
+          <Link href={`post/${id}`}>
             <Image
               src={imageUrl}
               fill
@@ -105,7 +103,6 @@ export default function FeedPost({ post }: FeedPostProps) {
           </Link>
         </div>
 
-        {/* Post Rating */}
         <div className="flex m-2 justify-between items-center">
           <div className="flex m-2 items-center">
             <p className="flex mr-4">
@@ -118,12 +115,11 @@ export default function FeedPost({ post }: FeedPostProps) {
               reactions={reactions}
             />
           </div>
-
-          {/* Show comments button and comments counter */}
-          <Link href={`post/${post.id}`}>
+          <Link href={`post/${id}`}>
             <FeedCommentsCounter postId={id} />
           </Link>
         </div>
+
         <FeedCommentInput postId={id} />
       </div>
     </div>

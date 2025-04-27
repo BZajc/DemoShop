@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { X, UploadCloud, Loader2 } from "lucide-react";
-import { createPost } from "@/app/api/actions/createPost";
+import { createPost } from "@/app/api/actions/posts/createPost";
 import { useRouter } from "next/navigation";
 
 interface CreatePostProps {

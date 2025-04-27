@@ -1,7 +1,7 @@
 import ActivityPanel from "./ActivityPanel";
 import SearchHeader from "../other/SearchHeaderWithPublishButton";
 import FeedPost from "./feedpost/FeedPost";
-import { getPosts } from "@/app/api/actions/getPosts";
+import { getPosts } from "@/app/api/actions/posts/getPosts";
 import { FollowProvider } from "@/app/context/FollowContext";
 
 export default async function FeedMainContent() {

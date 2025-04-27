@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { followUser } from "@/app/api/actions/followUser";
-import { getFollowingUsersIds } from "@/app/api/actions/getFollowingUsersIds";
+import { followUser } from "../api/actions/follows/followUser";
+import { getFollowingUsersIds } from "@/app/api/actions/follows/getFollowingUsersIds";
 import { useSession } from "next-auth/react";
 
 interface FollowContextValue {
@@ -15,7 +15,9 @@ const FollowContext = createContext<FollowContextValue | null>(null);
 export const FollowProvider = ({ children }: { children: React.ReactNode }) => {
   const { data: session } = useSession();
   const myUserId = session?.user?.id;
-  const [followedUserIds, setFollowedUserIds] = useState<Set<string>>(new Set());
+  const [followedUserIds, setFollowedUserIds] = useState<Set<string>>(
+    new Set()
+  );
 
   const isFollowed = (userId: string) => followedUserIds.has(userId);
 
@@ -47,6 +49,7 @@ export const FollowProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useFollowContext = () => {
   const ctx = useContext(FollowContext);
-  if (!ctx) throw new Error("useFollowContext mustbe used within FollowProvider");
+  if (!ctx)
+    throw new Error("useFollowContext mustbe used within FollowProvider");
   return ctx;
 };

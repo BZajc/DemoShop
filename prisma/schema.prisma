@@ -72,6 +72,7 @@ model User {
   receivedContacts Contact[]  @relation("ReceivedContacts")
   sentMessages     Message[]  @relation("SentMessages")
   receivedMessages Message[]  @relation("ReceivedMessages")
+  Collection Collection[]
 }
 
 enum ContactStatus {
@@ -126,6 +127,7 @@ model Post {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   reactions   PostReactions[]
+  collections Collection[] @relation("PostInCollection")
 
   @@index([createdAt])
 }
@@ -150,6 +152,8 @@ model Tag {
   postTags  PostTag[]
 
   SuggestedTags SuggestedTags[]
+
+  CollectionTag CollectionTag[]
 }
 
 model Comment {
@@ -226,4 +230,27 @@ model RecentlyVisitedUsers {
 
   @@index([visitorId, visitedAt])
   @@index([visitedId, visitedAt])
+}
+
+model Collection {
+  id              String   @id @default(cuid())
+  name            String
+  previewImageUrl String?
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  posts           Post[]   @relation("PostInCollection")
+  createdAt       DateTime @default(now())
+  hideTagWarning Boolean @default(false)
+  collectionTags  CollectionTag[]
+}
+
+model CollectionTag {
+  collectionId String
+  tagId        String
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  tag        Tag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, tagId])
+  @@index([tagId])
 }

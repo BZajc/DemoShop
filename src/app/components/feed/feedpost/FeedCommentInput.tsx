@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { MessageCircle, Smile } from "lucide-react";
-import { createComment } from "@/app/api/actions/createComment";
+import { createComment } from "@/app/api/actions/posts/createComment";
 import { useRouter } from "next/navigation";
 
 export default function FeedCommentInput({ postId }: { postId: string }) {

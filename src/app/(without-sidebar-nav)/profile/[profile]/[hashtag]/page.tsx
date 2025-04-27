@@ -6,14 +6,15 @@ import prisma from "@/lib/prisma";
 import SearchHeader from "@/app/components/profile/SearchHeader";
 import Image from "next/image";
 import TagsAsButtons from "@/app/components/profile/TagsAsButtons";
-import { addRecentlyVisited } from "@/app/api/actions/addRecentlyVisited";
+import { addRecentlyVisited } from "@/app/api/actions/userData/addRecentlyVisited";
 import UserPosts from "@/app/components/profile/UserPosts";
 import EditProfileModalLauncher from "@/app/components/profile/EditProfileModalLauncher";
 import ContactButton from "@/app/components/profile/ContactButton";
 import { getContactStatus } from "@/app/api/actions/contacts/getContactStatus";
 import FollowButton from "@/app/components/profile/FollowButton";
-import { isFollowing } from "@/app/api/actions/isFollowing";
+import { isFollowing } from "@/app/api/actions/follows/isFollowing";
 import { isUserOnline } from "@/lib/isUserOnline";
+import RemoveContactButton from "@/app/components/profile/RemoveContactButton";
 
 export default async function ProfilePage({
   params,
@@ -85,14 +86,16 @@ export default async function ProfilePage({
 
   return (
     <div className="p-4 animate-fade-in">
-      <header className="flex items-center mt-4 mb-12 max-w-[1200px] mx-auto">
+      <header className="flex items-center justify-between mt-4 mb-12 max-w-[1200px] mx-auto">
         <Link
           href="/feed"
           className="p-4 mr-4 duration-300 transition-all hover:scale-[1.05] bg-sky-400 text-white rounded-full border-2 border-sky-400 hover:text-sky-400 hover:bg-white flex items-center justify-center"
         >
           <House size={30} />
         </Link>
-        <SearchHeader />
+        <div className="w-[600px] max-w-[90%]">
+          <SearchHeader />
+        </div>
       </header>
 
       <section className="grid grid-cols-2 gap-4 max-w-[1200px] mx-auto h-[800px]">
@@ -161,6 +164,9 @@ export default async function ProfilePage({
                     profileUserId={user.id}
                     initialIsFollowing={isUserFollowing}
                   />
+                  {contactStatus === "accepted" && (
+                    <RemoveContactButton userId={user.id} />
+                  )}
                 </>
               )}
             </div>
