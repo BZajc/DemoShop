@@ -121,7 +121,7 @@ export default function SignForm() {
         {/* Displayed only on mobile */}
         <div className="flex flex-col p-4">
           <button
-            className="text-2xl rounded-full border-2 border-white m-2 md:hidden"
+            className="text-2xl rounded-full border-2 border-white m-2 md:hidden text-white p-2"
             onClick={() => scrollToForm()}
           >
             Get Started

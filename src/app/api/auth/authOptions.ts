@@ -2,7 +2,7 @@ import { AuthOptions } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs"
 import { generateHashtag } from "@/lib/utils";
 
 const prisma = new PrismaClient();

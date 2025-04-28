@@ -9,11 +9,13 @@ export default async function FeedMainContent() {
 
   return (
     <FollowProvider>
-      <div className="flex-1 overflow-hidden max-w-[900px] mx-auto">
+      <div className="flex-1 overflow-hidden w-[100vw] max-w-[900px] px-2 sm:px-4 mx-auto mt-16 md:mt-4">
+
+
         {/* Search input etc */}
         <SearchHeader />
 
-        {/* Side panel to display notifications */}
+        {/* Recent visited or online contacts */}
         <ActivityPanel />
 
         {/* Display list of posts */}

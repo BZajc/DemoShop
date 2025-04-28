@@ -37,7 +37,7 @@ export default function FollowSideBar() {
   if (users.length === 0) return null;
 
   return (
-    <div className="fixed top-4 right-4 flex flex-col items-center gap-4">
+    <div className="fixed top-[5rem] right-4 flex-col items-center gap-4 hidden md:flex z-10">
       {users.map((user) => (
         <Link
           key={user.id}

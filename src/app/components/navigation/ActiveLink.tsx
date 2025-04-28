@@ -1,4 +1,5 @@
 "use client";
+
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -25,9 +26,10 @@ interface ActiveLinkProps {
   href: string;
   label: string;
   iconName: keyof typeof iconsMap;
+  onClick?: () => void;
 }
 
-export default function ActiveLink({ href, label, iconName }: ActiveLinkProps) {
+export default function ActiveLink({ href, label, iconName, onClick }: ActiveLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === href;
   const IconComponent = iconsMap[iconName];
@@ -36,7 +38,8 @@ export default function ActiveLink({ href, label, iconName }: ActiveLinkProps) {
     <li>
       <Link
         href={href}
-        className={`relative mb-4 p-4 flex items-center rounded-full transition-all duration-300 transform cursor-pointer
+        onClick={onClick}
+        className={`relative mb-4 p-4 flex items-center rounded-full transition-all duration-300 transform cursor-pointer w-[90vw]
       ${
         isActive
           ? "bg-white text-sky-400"

@@ -1,6 +1,6 @@
 "use server";
 import prisma from "@/lib/prisma";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 export async function registerUser(formData: FormData) {
   const email = formData.get("email")?.toString().trim() || "";

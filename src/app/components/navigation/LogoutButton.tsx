@@ -12,7 +12,7 @@ export default function LogoutButton() {
 
   return (
     <button
-      className="p-4 flex items-center hover:text-rose-600 cursor-pointer transform hover:scale-105 transition-all duration-300 hover:bg-sky-700 rounded-full text-sky-200"
+      className="p-4 flex items-center hover:text-rose-600 cursor-pointer transform hover:scale-105 transition-all duration-300 hover:bg-sky-700 rounded-full text-sky-200 text-2xl md:text-base"
       onClick={handleLogout}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

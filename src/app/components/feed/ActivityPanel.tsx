@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { getRecentlyVisited } from "@/app/api/actions/userData/getRecentlyVisited";
-import { getOnlineContactsPaginated } from "@/app/api/actions/contacts/getOnlineContactsPaginated";
 import { User as UserIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import UserListModal from "../other/UserListModal";

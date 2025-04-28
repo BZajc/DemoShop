@@ -21,11 +21,8 @@ export default async function ProfilePage({
 }: {
   params: Promise<{ profile: string; hashtag: string }>;
 }) {
-  // Wait for params before use
   const resolvedParams = await params;
-  console.log("Params:", JSON.stringify(resolvedParams, null, 2));
 
-  // 404 if profile or hashtag doesnt exist
   if (!resolvedParams.profile || !resolvedParams.hashtag) {
     return notFound();
   }
@@ -65,23 +62,16 @@ export default async function ProfilePage({
     return notFound();
   }
 
-  // Add profile to recently visited
   await addRecentlyVisited(user.id);
 
   const session = await auth();
 
-  // Check if user is visiting his own profile
   const ownProfile =
     session?.user?.name === resolvedParams.profile &&
     session?.user?.hashtag === resolvedParams.hashtag;
 
-  // Handle what contact button should do
   const contactStatus = await getContactStatus(user.id);
-
-  // Handle what follow button should do
   const isUserFollowing = await isFollowing(user.id);
-
-  // is user online
   const online = isUserOnline(user.lastSeenAt);
 
   return (
@@ -98,11 +88,12 @@ export default async function ProfilePage({
         </div>
       </header>
 
-      <section className="grid grid-cols-2 gap-4 max-w-[1200px] mx-auto h-[800px]">
+      {/* ⬇️ RESPONSYWNY GRID */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1200px] mx-auto">
         {/* First Column */}
-        <div className="h-full flex flex-col gap-4">
-          {/* Left Top - Profile Info */}
-          <div className="bg-white h-1/2 w-full rounded-3xl shadow-lg p-4 flex flex-col items-center justify-center text-center">
+        <div className="flex flex-col gap-4">
+          {/* Profile Info */}
+          <div className="bg-white rounded-3xl shadow-lg p-4 flex flex-col items-center justify-center text-center">
             {user.avatarPhoto ? (
               <div
                 className={`w-[100px] h-[100px] rounded-full overflow-hidden mb-4 ${
@@ -133,8 +124,8 @@ export default async function ProfilePage({
             )}
           </div>
 
-          {/* Left Bottom - Actions and Stats */}
-          <div className="bg-white h-1/2 w-full rounded-3xl shadow-lg p-4">
+          {/* Actions and Stats */}
+          <div className="bg-white rounded-3xl shadow-lg p-4">
             <h2 className="text-lg font-semibold mb-2">Profile Information</h2>
             <p className="text-gray-500">
               Joined: {new Date(user.createdAt).toLocaleDateString()}
@@ -142,7 +133,8 @@ export default async function ProfilePage({
             <p className="text-gray-500">Followers: {user.followers.length}</p>
             <p className="text-gray-500">Following: {user.following.length}</p>
             <p className="text-gray-500">About Me: {user.aboutMe}</p>
-            <div className="mt-4 flex gap-2">
+
+            <div className="mt-4 flex gap-2 flex-wrap justify-center">
               {ownProfile ? (
                 <EditProfileModalLauncher
                   initialData={{
@@ -174,14 +166,14 @@ export default async function ProfilePage({
         </div>
 
         {/* Second Column */}
-        <div className="h-full flex flex-col gap-4">
-          {/* Right Top - Tags */}
-          <div className="bg-white h-1/2 w-full rounded-3xl shadow-lg p-4 overflow-y-auto">
+        <div className="flex flex-col gap-4">
+          {/* Tags */}
+          <div className="bg-white rounded-3xl shadow-lg p-4 overflow-y-auto max-h-[400px]">
             <h2 className="text-lg font-semibold mb-2">Interests</h2>
             <TagsAsButtons selectedTags={user.selectedTags} />
           </div>
 
-          {/* Right Bottom - Posts */}
+          {/* User Posts */}
           <UserPosts posts={user.posts} />
         </div>
       </section>

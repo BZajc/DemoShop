@@ -1,7 +1,6 @@
 "use client";
 import { User, Lock, Github } from "lucide-react";
 import { signIn } from "next-auth/react";
-import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -97,7 +96,7 @@ export default function LoginForm({ handleFormChange }: LoginFormProps) {
       </form>
 
       <p className="p-4 pb-0 text-sky-400 text-4xl text-center mt-4">OR</p>
-      <p className="text-center text-2xl text-sky-400">use below methods</p>
+      <p className="text-center text-2xl text-sky-400">use GitHub</p>
 
       {/* Providers Log In */}
       <div className="flex items-center justify-center gap-4">
@@ -106,32 +105,21 @@ export default function LoginForm({ handleFormChange }: LoginFormProps) {
         ) : (
           <>
             <button
-              className="my-4 rounded-full w-16 h-12 flex items-center justify-center hover:text-black hover:bg-white hover:border-2 hover:border-black"
+              className="my-4 rounded-full w-16 h-16 flex items-center justify-center border-2 border-black bg-white text-black hover:border-transparent hover:bg-black hover:text-white transition-colors duration-300"
               onClick={() => signIn("github", { callbackUrl: "/" })}
             >
-              <Github />
-            </button>
-            <button
-              className="my-4 rounded-full w-16 h-12 flex items-center justify-center hover:text-black hover:bg-white hover:border-2 hover:border-black"
-            >
-              <Image
-                src="/images/googleIcon.svg"
-                alt="Google Icon"
-                width={24}
-                height={24}
-              />
+              <Github size={32} />
             </button>
           </>
         )}
       </div>
 
       {/* Form Swap */}
-      <div className="border-b-2 border-sky-400 w-[30%] my-4 mx-auto" />
       <p className="text-center text-2xl text-sky-400">
         Don&apos;t have an account yet?
       </p>
       <button
-        className="mx-auto my-4 rounded-full text-2xl border-sky-400 border-2 bg-white text-sky-400 hover:bg-black hover:text-white hover:border-black"
+        className="mx-auto my-4 rounded-full text-2xl border-sky-400 border-2 bg-white text-sky-400 hover:bg-black hover:text-white hover:border-black p-2"
         onClick={() => handleFormChange(true)}
       >
         Create Here

@@ -101,7 +101,7 @@ export default function RegisterForm({ handleFormChange }: RegisterFormProps) {
         {errors.confirmPassword && (
           <p className="text-red-500">{errors.confirmPassword}</p>
         )}
-        <p className="text-center p-2 text-sky-900 text-sm">This app does not currently require email verification for faster testing purposes</p>
+        <p className="text-center p-2 text-sky-900 text-sm">This app does not require email verification for faster testing purposes</p>
         <button
           className="mx-auto rounded-full text-2xl border-sky-400 border-2 bg-white text-sky-400 hover:bg-black hover:text-white hover:border-black px-16 py-1"
           disabled={isSubmitting}

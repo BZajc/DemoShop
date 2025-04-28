@@ -1,6 +1,6 @@
 "use server";
 import prisma from "@/lib/prisma";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 export async function loginUser(formData: FormData) {
   const identifier = formData.get("identifier")?.toString().trim() || "";

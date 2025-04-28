@@ -25,7 +25,7 @@ export default function FeedPost({ post }: FeedPostProps) {
 
   return (
     <div
-      className="relative m-4 rounded-xl flex flex-col text-white"
+      className="relative w-full max-w-full mb-8 rounded-xl flex flex-col text-white"
       style={{
         backgroundImage: `url(${imageUrl})`,
         backgroundSize: "cover",
@@ -80,7 +80,7 @@ export default function FeedPost({ post }: FeedPostProps) {
 
         <div className="w-[90%] border-b-2 border-white mx-auto mt-4 mb-2"></div>
 
-        <div className="flex gap-2 ml-4">
+        <div className="flex flex-wrap gap-2 ml-4">
           {tags.map(({ tag }) => (
             <Link
               key={tag.name}

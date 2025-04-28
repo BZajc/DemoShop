@@ -10,7 +10,7 @@ export default async function PublicCollectionPage(props: {
   const session = await auth();
   const currentUserId = session?.user?.id;
 
-  const { id } = props.params;
+  const { id } = await props.params;
 
   const collection = await prisma.collection.findUnique({
     where: { id },
