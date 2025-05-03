@@ -9,9 +9,7 @@ export default async function FeedMainContent() {
 
   return (
     <FollowProvider>
-      <div className="flex-1 overflow-hidden w-[100vw] max-w-[900px] px-2 sm:px-4 mx-auto mt-16 md:mt-4">
-
-
+      <div className="flex-1 overflow-hidden w-[100vw] max-w-[900px] px-2 sm:px-4 mx-auto">
         {/* Search input etc */}
         <SearchHeader />
 
@@ -19,9 +17,11 @@ export default async function FeedMainContent() {
         <ActivityPanel />
 
         {/* Display list of posts */}
-        {posts.map((post) => (
-          <FeedPost key={post.id} post={post} />
-        ))}
+        <div className="p-4">
+          {posts.map((post) => (
+            <FeedPost key={post.id} post={post} />
+          ))}
+        </div>
       </div>
     </FollowProvider>
   );

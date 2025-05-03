@@ -13,34 +13,33 @@ export default function LeftPanel() {
   return (
     <div className="h-full flex flex-col">
       {/* Buttons */}
-      <div className="flex flex-wrap gap-2 p-4 border-b border-gray-200">
+      <div className="flex flex-col gap-3 px-4 py-6 border-b border-gray-200 w-full">
         <button
           onClick={() => setActiveTab("recent")}
-          className={`px-4 py-2 rounded-full text-sm ${
+          className={`w-full px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
             activeTab === "recent"
-              ? "bg-sky-400 text-white"
-              : "bg-stone-200 text-sky-900 hover:bg-sky-300 hover:text-white"
+              ? "bg-sky-500 text-white shadow-md"
+              : "bg-gray-100 text-sky-900 hover:bg-sky-300 hover:text-white"
           }`}
         >
           Recent
         </button>
         <button
           onClick={() => setActiveTab("online")}
-          className={`px-4 py-2 rounded-full text-sm ${
+          className={`w-full px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
             activeTab === "online"
-              ? "bg-sky-400 text-white"
-              : "bg-stone-200 text-sky-900 hover:bg-sky-300 hover:text-white"
+              ? "bg-sky-500 text-white shadow-md"
+              : "bg-gray-100 text-sky-900 hover:bg-sky-300 hover:text-white"
           }`}
         >
           Online
         </button>
-
         <button
           onClick={() => setActiveTab("all")}
-          className={`px-4 py-2 rounded-full text-sm ${
+          className={`w-full px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
             activeTab === "all"
-              ? "bg-sky-400 text-white"
-              : "bg-stone-200 text-sky-900 hover:bg-sky-300 hover:text-white"
+              ? "bg-sky-500 text-white shadow-md"
+              : "bg-gray-100 text-sky-900 hover:bg-sky-300 hover:text-white"
           }`}
         >
           All Contacts

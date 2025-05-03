@@ -212,7 +212,7 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
 
   return (
     <div
-      className="custom-scrollbar scrollbar-gutter-stable animate-fade-in z-[999] bg-black/50 h-full w-full fixed left-0 top-0 flex justify-center items-center overflow-y-auto"
+      className="custom-scrollbar scrollbar-gutter-stable animate-fade-in z-[999] bg-black/50 h-full w-full fixed left-0 top-0 flex justify-center items-center overflow-y-auto p-4 md:p-0"
       onClick={(e) => {
         if (e.target === e.currentTarget) setShowConfirmPopup(true);
       }}

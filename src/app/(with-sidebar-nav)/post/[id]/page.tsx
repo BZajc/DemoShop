@@ -55,7 +55,7 @@ export default async function PostPage({ params }: PostPageProps) {
   const formattedDate = new Date(post.createdAt).toLocaleString();
 
   return (
-    <div className="max-w-4xl mx-auto p-6 text-white animate-fade-in flex flex-col">
+    <div className="max-w-[100vw] md:max-w-4xl mx-auto mt-16 md:mt-4 p-6 text-white animate-fade-in flex flex-col">
       <header>
         <SearchHeaderWithPublishButton />
         <h1 className="text-black text-2xl py-2">{post.title}</h1>
@@ -69,7 +69,7 @@ export default async function PostPage({ params }: PostPageProps) {
         }}
       >
         <div className="absolute inset-0 bg-black/50 backdrop-blur-lg rounded-xl"></div>
-        <div className="relative z-10">
+        <div className="relative z-10 max-w-[100vw]">
           {/* Post Container */}
           <div className="flex justify-between text-sm items-center">
             <div className="flex items-center gap-2">

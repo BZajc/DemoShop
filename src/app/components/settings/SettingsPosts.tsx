@@ -31,7 +31,8 @@ export default function SettingsPosts({ posts, userId }: Props) {
           <p className="text-gray-600">You haven't published any posts yet.</p>
         )}
 
-        <div className="grid md:grid-cols-2 gap-6">
+<div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
           {posts.map((post) => {
             const likes = post.likes || 0;
             const dislikes = post.dislikes || 0;

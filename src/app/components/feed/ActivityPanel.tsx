@@ -36,9 +36,16 @@ export default function ActivityPanel() {
   const [activeList, setActiveList] = useState<"recentlyVisited" | "online">(
     "recentlyVisited"
   );
-  const [showModal, setShowModal] = useState<
-    null | "online" | "recentlyVisited"
-  >(null);
+  const [showModal, setShowModal] = useState<null | "online" | "recentlyVisited">(null);
+
+  const [isMobile, setIsMobile] = useState(false);
+  const holdTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (window.innerWidth <= 768) {
+      setIsMobile(true);
+    }
+  }, []);
 
   useEffect(() => {
     async function fetchRecentlyVisited() {
@@ -63,20 +70,28 @@ export default function ActivityPanel() {
     setActiveList(listType);
   };
 
-  const handleDoubleClick = (type: "online" | "recentlyVisited") => {
-    const now = Date.now();
-
-    if (
-      lastClick.current &&
-      lastClick.current.type === type &&
-      now - lastClick.current.time < 500
-    ) {
-      setShowModal(type);
+  const handleInteraction = (type: "online" | "recentlyVisited") => {
+    if (isMobile) {
+      holdTimeout.current = setTimeout(() => {
+        setShowModal(type);
+      }, 500);
     } else {
-      handleListChange(type);
+      const now = Date.now();
+      if (
+        lastClick.current &&
+        lastClick.current.type === type &&
+        now - lastClick.current.time < 500
+      ) {
+        setShowModal(type);
+      } else {
+        handleListChange(type);
+      }
+      lastClick.current = { time: now, type };
     }
+  };
 
-    lastClick.current = { time: now, type };
+  const cancelHold = () => {
+    if (holdTimeout.current) clearTimeout(holdTimeout.current);
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -103,7 +118,10 @@ export default function ActivityPanel() {
     <div className="flex flex-col m-4 mt-12 select-none">
       <div className="flex">
         <button
-          onClick={() => handleDoubleClick("online")}
+          onMouseDown={() => handleInteraction("online")}
+          onTouchStart={() => handleInteraction("online")}
+          onMouseUp={cancelHold}
+          onTouchEnd={cancelHold}
           className={`p-2 px-4 rounded-full text-sky-900 transition-all duration-300 hover:text-white hover:bg-sky-400 
             ${
               activeList === "online" ? "bg-sky-400 text-white" : "bg-stone-200"
@@ -113,7 +131,10 @@ export default function ActivityPanel() {
         </button>
 
         <button
-          onClick={() => handleDoubleClick("recentlyVisited")}
+          onMouseDown={() => handleInteraction("recentlyVisited")}
+          onTouchStart={() => handleInteraction("recentlyVisited")}
+          onMouseUp={cancelHold}
+          onTouchEnd={cancelHold}
           className={`p-2 px-4 ml-4 rounded-full text-sky-900 transition-all duration-300 hover:text-white hover:bg-sky-400 
             ${
               activeList === "recentlyVisited"
@@ -126,7 +147,9 @@ export default function ActivityPanel() {
       </div>
 
       <p className="text-sky-900 text-sm p-1">
-        You can also double-click one of the buttons above to show all users.
+        {isMobile
+          ? "Hold a button to show all users."
+          : "Double-click one of the buttons above to show all users."}
       </p>
 
       <div

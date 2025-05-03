@@ -12,7 +12,7 @@ export default async function SettingsTabPage({
   const { tab } = await params;
 
   return (
-    <div className="p-6 animate-fade-in">
+    <div className="mt-[4rem] md:mt-0 p-6 animate-fade-in">
       <SettingsTabs />
 
       <div className="mt-6">

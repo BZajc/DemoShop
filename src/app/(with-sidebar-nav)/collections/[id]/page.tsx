@@ -45,7 +45,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
   return (
     <>
       {isOwner && (
-        <div className="max-w-5xl mx-auto p-6 pt-0">
+        <div className="mt-[4rem] md:mt-0 max-w-5xl mx-auto p-6 pt-0">
           <Link
             href="/collections"
             className="inline-block mb-6 px-4 py-2 bg-sky-500 text-white text-sm font-medium rounded-full hover:bg-sky-600 transition"

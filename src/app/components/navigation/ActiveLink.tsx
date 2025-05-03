@@ -39,7 +39,7 @@ export default function ActiveLink({ href, label, iconName, onClick }: ActiveLin
       <Link
         href={href}
         onClick={onClick}
-        className={`relative mb-4 p-4 flex items-center rounded-full transition-all duration-300 transform cursor-pointer w-[90vw]
+        className={`relative mb-4 p-4 flex items-center rounded-full transition-all duration-300 transform cursor-pointer w-[90vw] md:w-auto
       ${
         isActive
           ? "bg-white text-sky-400"

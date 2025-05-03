@@ -2,6 +2,7 @@ import Image from "next/image";
 import LogoutButton from "./LogoutButton";
 import ActiveLink from "./ActiveLink";
 import { auth } from "@/lib/auth";
+import Link from "next/link";
 
 export default async function SidebarNav() {
   const session = await auth();
@@ -13,12 +14,15 @@ export default async function SidebarNav() {
       {/* Top part of nav */}
       <div>
         <div className="flex items-center justify-center mb-4">
-          <Image
-            src="/images/picbookLogo.png"
-            alt="picbook logo"
-            width={40}
-            height={40}
-          />
+          <Link href="/feed">
+            <Image
+              src="/images/picbookLogo.png"
+              alt="picbook logo"
+              width={40}
+              height={40}
+              className="cursor-pointer"
+            />
+          </Link>
         </div>
 
         {/* Navigation */}

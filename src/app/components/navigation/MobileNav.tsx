@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import ActiveLink from "./ActiveLink";
 import LogoutButton from "./LogoutButton";
 
@@ -57,13 +58,15 @@ export default function MobileNav({ profilePath }: MobileNavProps) {
         {/* Navigation content */}
         <div className="flex flex-col items-center mt-4">
           {/* Logo */}
-          <Image
-            src="/images/picbookLogo.png"
-            alt="picbook logo"
-            width={60}
-            height={60}
-            className="mb-8"
-          />
+          <Link href="/feed" onClick={handleLinkClick}>
+            <Image
+              src="/images/picbookLogo.png"
+              alt="picbook logo"
+              width={60}
+              height={60}
+              className="mb-8 cursor-pointer"
+            />
+          </Link>
 
           {/* Links */}
           <ul className="flex flex-col items-center gap-6 text-lg">
@@ -71,43 +74,43 @@ export default function MobileNav({ profilePath }: MobileNavProps) {
               href={profilePath}
               label="Profile"
               iconName="profile"
-              onClick={() => setIsOpen(false)}
+              onClick={handleLinkClick}
             />
             <ActiveLink
               href="/feed"
               label="Feed"
               iconName="feed"
-              onClick={() => setIsOpen(false)}
+              onClick={handleLinkClick}
             />
             <ActiveLink
               href="/contacts"
               label="Contacts"
               iconName="contacts"
-              onClick={() => setIsOpen(false)}
+              onClick={handleLinkClick}
             />
             <ActiveLink
               href="/collections"
               label="Collections"
               iconName="collections"
-              onClick={() => setIsOpen(false)}
+              onClick={handleLinkClick}
             />
             <ActiveLink
               href="/follows"
               label="Follows"
               iconName="diamond"
-              onClick={() => setIsOpen(false)}
+              onClick={handleLinkClick}
             />
             <ActiveLink
               href="/settings/privacy"
               label="Settings"
               iconName="settings"
-              onClick={() => setIsOpen(false)}
+              onClick={handleLinkClick}
             />
             <ActiveLink
               href="/123"
               label="Github Docs"
               iconName="github"
-              onClick={() => setIsOpen(false)}
+              onClick={handleLinkClick}
             />
           </ul>
 

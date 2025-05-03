@@ -50,10 +50,10 @@ export default async function ChatPage({
         </header>
 
         <div className="flex flex-1 overflow-hidden">
-          <div className="w-1/3 bg-white border-r overflow-y-auto">
+          <div className="hidden md:block w-1/3 bg-white border-r overflow-y-auto">
             <LeftPanel />
           </div>
-          <div className="w-2/3 bg-white overflow-y-auto">
+          <div className="w-full md:w-2/3 bg-white overflow-y-auto">
             <ChatWindow
               contactUser={{
                 ...user,

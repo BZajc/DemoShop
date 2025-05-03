@@ -12,6 +12,8 @@ import Image from "next/image";
 import { User as UserIcon } from "lucide-react";
 import Link from "next/link";
 import { getAvatars } from "@/app/api/actions/contacts/getAvatars";
+import { Menu } from "lucide-react";
+import MobileLeftPanel from "./MobileLeftPanel";
 
 interface Message {
   id: string;
@@ -43,8 +45,13 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  const [userAvatars, setUserAvatars] = useState<Record<string, string | null>>({});
-  const [contactStatus, setContactStatus] = useState<"accepted" | "pending" | "invited" | "received" | "none" | null>(null);
+  const [userAvatars, setUserAvatars] = useState<Record<string, string | null>>(
+    {}
+  );
+  const [contactStatus, setContactStatus] = useState<
+    "accepted" | "pending" | "invited" | "received" | "none" | null
+  >(null);
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
 
   const topRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -68,8 +75,9 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
         const all = [...newMessages, ...prev];
         const map = new Map<string, Message>();
         all.forEach((msg) => map.set(msg.id, msg));
-        return Array.from(map.values()).sort((a, b) =>
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        return Array.from(map.values()).sort(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         );
       });
       setPage((prev) => prev + 1);
@@ -96,7 +104,9 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
     const fetchAvatars = async () => {
       if (!session?.user?.id || !selectedUserId) return;
       const avatars = await getAvatars([session.user.id, selectedUserId]);
-      const avatarMap = Object.fromEntries(avatars.map((u) => [u.id, u.avatarPhoto || null]));
+      const avatarMap = Object.fromEntries(
+        avatars.map((u) => [u.id, u.avatarPhoto || null])
+      );
       setUserAvatars(avatarMap);
     };
     fetchAvatars();
@@ -109,8 +119,10 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
       const newMsg = payload.new as Message;
 
       const isCurrentChat =
-        (newMsg.sender_id === selectedUserId && newMsg.receiver_id === session.user.id) ||
-        (newMsg.receiver_id === selectedUserId && newMsg.sender_id === session.user.id);
+        (newMsg.sender_id === selectedUserId &&
+          newMsg.receiver_id === session.user.id) ||
+        (newMsg.receiver_id === selectedUserId &&
+          newMsg.sender_id === session.user.id);
 
       if (!isCurrentChat) return;
 
@@ -132,18 +144,26 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
 
     const channel = supabase
       .channel("messages-realtime")
-      .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "Message",
-        filter: `receiver_id=eq.${session.user.id}`,
-      }, handleMessage)
-      .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "Message",
-        filter: `sender_id=eq.${session.user.id}`,
-      }, handleMessage)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "Message",
+          filter: `receiver_id=eq.${session.user.id}`,
+        },
+        handleMessage
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "Message",
+          filter: `sender_id=eq.${session.user.id}`,
+        },
+        handleMessage
+      )
       .subscribe();
 
     return () => {
@@ -214,7 +234,7 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
   return (
     <div className="flex flex-col h-full relative">
       {/* Header */}
-      <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-white p-2 rounded-xl shadow transition-opacity hover:opacity-60">
+      <div className="md:absolute top-4 left-4 z-10 flex items-center gap-2 bg-white p-2 rounded-xl shadow transition-opacity hover:opacity-60">
         <Link
           href={`/profile/${contactUser.name}/${contactUser.hashtag}`}
           className="flex items-center gap-3 p-2 bg-white rounded-xl shadow hover:bg-gray-50 transition"
@@ -234,8 +254,12 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
           )}
           <div>
             <div className="flex flex-col">
-              <p className="font-semibold text-sky-900 hover:underline">@{contactUser.name}</p>
-              <p className="text-gray-400 text-xs">{formatStatus(contactUser.lastSeenAt)}</p>
+              <p className="font-semibold text-sky-900 hover:underline">
+                @{contactUser.name}
+              </p>
+              <p className="text-gray-400 text-xs">
+                {formatStatus(contactUser.lastSeenAt)}
+              </p>
             </div>
             {contactUser.realName && (
               <p className="text-gray-500 text-sm">{contactUser.realName}</p>
@@ -245,7 +269,11 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2" onScroll={handleScroll} ref={containerRef}>
+      <div
+        className="flex-1 overflow-y-auto p-4 space-y-2"
+        onScroll={handleScroll}
+        ref={containerRef}
+      >
         <div ref={topRef} />
         {!loading && hasLoadedOnce && messages.length === 0 ? (
           <p className="text-gray-500">No messages yet</p>
@@ -256,39 +284,67 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
               const isPending = msg.isPending;
               const avatarUrl = userAvatars[msg.sender_id];
               return (
-                <div key={msg.id} className={`flex items-start gap-2 ${isMine ? "justify-end" : "justify-start"}`}>
-                  {!isMine && (
-                    avatarUrl ? (
-                      <Image src={avatarUrl} alt="avatar" width={32} height={32} className="w-8 h-8 rounded-full object-cover" />
+                <div
+                  key={msg.id}
+                  className={`flex items-start gap-2 ${
+                    isMine ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  {!isMine &&
+                    (avatarUrl ? (
+                      <Image
+                        src={avatarUrl}
+                        alt="avatar"
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
                         <UserIcon className="text-gray-500 w-4 h-4" />
                       </div>
-                    )
-                  )}
+                    ))}
                   <div className="max-w-[75%]">
-                    <div className={`break-words px-4 py-2 rounded-xl text-sm shadow ${
-                      isMine ? isPending ? "bg-sky-200 text-white opacity-60" : "bg-sky-400 text-white" : "bg-gray-200 text-sky-900"
-                    }`}>
+                    <div
+                      className={`break-words px-4 py-2 rounded-xl text-sm shadow ${
+                        isMine
+                          ? isPending
+                            ? "bg-sky-200 text-white opacity-60"
+                            : "bg-sky-400 text-white"
+                          : "bg-gray-200 text-sky-900"
+                      }`}
+                    >
                       {msg.content}
-                      {isPending && <span className="block text-[10px] text-white mt-1">Sending...</span>}
+                      {isPending && (
+                        <span className="block text-[10px] text-white mt-1">
+                          Sending...
+                        </span>
+                      )}
                     </div>
                     <p className="text-[10px] text-gray-400 mt-1 text-right">
-                      {new Date(msg.created_at + "Z").toLocaleTimeString(undefined, {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {new Date(msg.created_at + "Z").toLocaleTimeString(
+                        undefined,
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
                     </p>
                   </div>
-                  {isMine && (
-                    avatarUrl ? (
-                      <Image src={avatarUrl} alt="avatar" width={32} height={32} className="w-8 h-8 rounded-full object-cover" />
+                  {isMine &&
+                    (avatarUrl ? (
+                      <Image
+                        src={avatarUrl}
+                        alt="avatar"
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
                         <UserIcon className="text-gray-500 w-4 h-4" />
                       </div>
-                    )
-                  )}
+                    ))}
                 </div>
               );
             })}
@@ -308,6 +364,17 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
           This user is not in your contacts.
         </div>
       )}
+
+      {/*(mobile) menu button in top right corner */}
+      <button
+        onClick={() => setMenuOpen(true)}
+        className="md:hidden fixed top-4 right-4 z-50 bg-white rounded-full p-2 shadow border border-gray-300 text-sky-900 hover:text-sky-600"
+        aria-label="Open contacts"
+      >
+        <Menu size={24} />
+      </button>
+
+      <MobileLeftPanel isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import FeedSidebar from "../components/other/FollowSideBar";
 import SidebarNav from "../components/navigation/SidebarNav";
 import MobileNav from "../components/navigation/MobileNav";
 import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export default async function WithSidebarLayout({
   children,
@@ -10,6 +11,11 @@ export default async function WithSidebarLayout({
 }) {
   const session = await auth();
   const profilePath = `/profile/${session?.user.name}/${session?.user.hashtag}`;
+
+  if (!session) {
+    redirect("/sign");
+  }
+  
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Desktop nav */}
