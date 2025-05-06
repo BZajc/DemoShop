@@ -107,7 +107,7 @@ export default function MobileNav({ profilePath }: MobileNavProps) {
               onClick={handleLinkClick}
             />
             <ActiveLink
-              href="/123"
+              href="https://github.com/BZajc/Picbook"
               label="Github Docs"
               iconName="github"
               onClick={handleLinkClick}

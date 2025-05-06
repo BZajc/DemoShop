@@ -41,7 +41,7 @@ export default async function SidebarNav() {
             label="Settings"
             iconName="settings"
           />
-          <ActiveLink href="/123" label="Github Docs" iconName="github" />
+          <ActiveLink href="https://github.com/BZajc/Picbook" label="Github Docs" iconName="github" />
         </ul>
       </div>
 
