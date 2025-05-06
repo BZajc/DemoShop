@@ -322,13 +322,14 @@ export default function ChatWindow({ contactUser }: ChatWindowProps) {
                       )}
                     </div>
                     <p className="text-[10px] text-gray-400 mt-1 text-right">
-                      {new Date(msg.created_at + "Z").toLocaleTimeString(
-                        undefined,
-                        {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
-                      )}
+                    {new Date(msg.created_at + "Z").toLocaleString(undefined, {
+  hour: "2-digit",
+  minute: "2-digit",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+})}
+
                     </p>
                   </div>
                   {isMine &&

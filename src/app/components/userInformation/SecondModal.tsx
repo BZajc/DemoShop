@@ -33,9 +33,9 @@ export default function SecondModal({
   };
 
   return (
-    <div className="text-center p-4 ">
+    <div className="w-full flex flex-col items-center p-4">
       <h2 className="text-xl text-sky-950 mb-4">Set Your Profile Picture</h2>
-
+  
       {/* Hidden file input */}
       <input
         type="file"
@@ -44,34 +44,38 @@ export default function SecondModal({
         className="hidden"
         id="file-upload"
       />
+  
+      {/* Upload button */}
       <label
         htmlFor="file-upload"
-        className="cursor-pointer px-4 py-2 bg-sky-200 text-sky-900 rounded-full hover:bg-sky-400 hover:text-white transition-all"
+        className="cursor-pointer mb-4 px-4 py-2 bg-sky-200 text-sky-900 rounded-full hover:bg-sky-400 hover:text-white transition-all"
       >
         Upload Image
       </label>
-
+  
       {userData.imageSrc && (
-        <div className="mt-4 flex flex-col items-center">
-          <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-sky-500 bg-gray-300">
+        <>
+          {/* Preview circle */}
+          <div className="mb-4 w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-sky-500 bg-gray-300 relative">
             <Image
               src={userData.imageSrc}
               alt="Profile Preview"
               fill
-              className="object-cover cursor-grab active:cursor-grabbing"
-              sizes="128px"
+              className="object-cover w-full h-full cursor-grab active:cursor-grabbing"
             />
           </div>
-
-          {/* Submit Button */}
+  
+          {/* Remove button */}
           <button
-            className="mt-4 bg-sky-200 rounded-full py-2 px-4 text-sky-900 hover:text-white hover:bg-sky-400 transition"
             onClick={handleRemovePicture}
+            className="px-4 py-2 bg-sky-200 text-sky-900 rounded-full hover:bg-sky-400 hover:text-white transition-all"
           >
             Remove Picture
           </button>
-        </div>
+        </>
       )}
     </div>
   );
+  
+  
 }

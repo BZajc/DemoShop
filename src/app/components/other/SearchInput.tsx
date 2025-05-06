@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
@@ -7,6 +7,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { SearchResult } from "@/types/SearchResult";
+import { Post } from "@/types/Post";
+import { Collection } from "@/types/Collection";
+import { User } from "@/types/User";
+import { Tag } from "@/types/Tag";
+import { SearchPost } from "@/types/SearchResult";
 
 //  Helper to bold letters
 function highlightMatch(text: string, query: string) {
@@ -29,7 +35,7 @@ function highlightMatch(text: string, query: string) {
 export default function SearchInput() {
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<SearchResult | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -59,14 +65,19 @@ export default function SearchInput() {
         text?.toLowerCase().includes(lowercaseQuery);
 
       setResults({
-        posts: res.posts.filter((p: any) => filterMatch(p.title)).slice(0, 5),
+        posts: res.posts
+          .filter((p: SearchPost) => filterMatch(p.title))
+          .slice(0, 5),
         collections: res.collections
-          .filter((c: any) => filterMatch(c.name))
+          .filter((c: Collection) => filterMatch(c.name))
           .slice(0, 5),
-        tags: res.tags.filter((t: any) => filterMatch(t.name)).slice(0, 5),
+        tags: res.tags.filter((t: Tag) => filterMatch(t.name)).slice(0, 5),
         users: res.users
-          .filter((u: any) => filterMatch(u.name) || filterMatch(u.realName))
+          .filter((u: User) => filterMatch(u.name) || filterMatch(u.realName))
           .slice(0, 5),
+        totalPosts: res.totalPosts,
+        totalCollections: res.totalCollections,
+        totalUsers: res.totalUsers,
       });
 
       setShowDropdown(true);
@@ -115,77 +126,92 @@ export default function SearchInput() {
       {showDropdown && results && (
         <div className="absolute top-full mt-2 w-full bg-white text-sky-900 shadow-xl border rounded-xl z-50 max-h-[300px] overflow-auto text-sm p-4 space-y-3">
           {Object.entries(results).map(([key, items]) =>
-            (items as any[]).length > 0 ? (
+            (items as Array<Post | Collection | User | Tag>).length > 0 ? (
               <div key={key}>
                 <h4 className="font-semibold capitalize text-sky-700 mb-1">
                   {key}
                 </h4>
                 <ul>
-                  {(items as any[]).map((item: any) => (
-                    <li key={item.id}>
-                      <Link
-                        href={
-                          key === "users"
-                            ? `/profile/${item.name}/${item.hashtag}`
-                            : key === "collections"
-                            ? item.userId === session?.user?.id
-                              ? `/collections/${item.id}`
-                              : `/public-collection/${item.id}`
-                            : key === "posts"
-                            ? `/post/${item.id}`
-                            : `/search?query=${encodeURIComponent(item.name)}`
-                        }
-                        className="block px-2 py-1 hover:bg-sky-50 rounded flex items-center gap-2"
-                      >
-                        {key === "users" && item.avatarPhoto && (
-                          <Image
-                            src={item.avatarPhoto}
-                            alt="avatar"
-                            width={24}
-                            height={24}
-                            className="rounded-full object-cover w-6 h-6"
-                          />
-                        )}
-                        {key === "posts" && item.imageUrl && (
-                          <Image
-                            src={item.imageUrl}
-                            alt="post"
-                            width={24}
-                            height={24}
-                            className="rounded object-cover w-6 h-6"
-                          />
-                        )}
-                        {key === "collections" && item.previewImageUrl && (
-                          <Image
-                            src={item.previewImageUrl}
-                            alt="collection"
-                            width={24}
-                            height={24}
-                            className="rounded object-cover w-6 h-6"
-                          />
-                        )}
-                        {key === "tags" && (
-                          <span>{highlightMatch(item.name, query)}</span>
-                        )}
-                        {key === "users" && (
-                          <span>
-                            @{highlightMatch(item.name, query)}
-                            {item.realName && (
-                              <span className="ml-1 text-gray-500 text-xs">
-                                ({highlightMatch(item.realName, query)})
+                  {/* Idk but it works */}
+                  {(items as Array<Post | Collection | User | Tag>).map(
+                    (item) => {
+                      const isUser = (i: Post | Collection | User | Tag): i is User =>
+                        "avatarPhoto" in i && "name" in i;
+                      const isPost = (i: Post | Collection | User | Tag): i is Post =>
+                        "imageUrl" in i && "title" in i;
+                      const isCollection = (i: Post | Collection | User | Tag): i is Collection =>
+                        "previewImageUrl" in i && "userId" in i;
+                      const isTag = (i: Post | Collection | User | Tag): i is Tag =>
+                        !("userId" in i) && "name" in i;
+                      return (
+                        <li key={item.id}>
+                          <Link
+                            href={
+                              isUser(item)
+                                ? `/profile/${item.name}/${item.hashtag}`
+                                : isCollection(item)
+                                ? item.userId === session?.user?.id
+                                  ? `/collections/${item.id}`
+                                  : `/public-collection/${item.id}`
+                                : isPost(item)
+                                ? `/post/${item.id}`
+                                : `/search?query=${encodeURIComponent(
+                                    item.name
+                                  )}`
+                            }
+                            className="block px-2 py-1 hover:bg-sky-50 rounded flex items-center gap-2"
+                          >
+                            {isUser(item) && item.avatarPhoto && (
+                              <Image
+                                src={item.avatarPhoto}
+                                alt="avatar"
+                                width={24}
+                                height={24}
+                                className="rounded-full object-cover w-6 h-6"
+                              />
+                            )}
+                            {isPost(item) && item.imageUrl && (
+                              <Image
+                                src={item.imageUrl}
+                                alt="post"
+                                width={24}
+                                height={24}
+                                className="rounded object-cover w-6 h-6"
+                              />
+                            )}
+                            {isCollection(item) && item.previewImageUrl && (
+                              <Image
+                                src={item.previewImageUrl}
+                                alt="collection"
+                                width={24}
+                                height={24}
+                                className="rounded object-cover w-6 h-6"
+                              />
+                            )}
+                            {isTag(item) && (
+                              <span>{highlightMatch(item.name, query)}</span>
+                            )}
+                            {isUser(item) && (
+                              <span>
+                                @{highlightMatch(item.name, query)}
+                                {item.realName && (
+                                  <span className="ml-1 text-gray-500 text-xs">
+                                    ({highlightMatch(item.realName, query)})
+                                  </span>
+                                )}
                               </span>
                             )}
-                          </span>
-                        )}
-                        {key === "posts" && (
-                          <span>{highlightMatch(item.title, query)}</span>
-                        )}
-                        {key === "collections" && (
-                          <span>{highlightMatch(item.name, query)}</span>
-                        )}
-                      </Link>
-                    </li>
-                  ))}
+                            {isPost(item) && (
+                              <span>{highlightMatch(item.title, query)}</span>
+                            )}
+                            {isCollection(item) && (
+                              <span>{highlightMatch(item.name, query)}</span>
+                            )}
+                          </Link>
+                        </li>
+                      );
+                    }
+                  )}
                 </ul>
               </div>
             ) : null

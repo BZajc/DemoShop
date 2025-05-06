@@ -1,5 +1,6 @@
 "use server";
 import prisma from "@/lib/prisma";
+import { Reaction } from "@/types/Post";
 
 export async function getPosts(skip = 0, take = 10) {
   const posts = await prisma.post.findMany({
@@ -33,8 +34,8 @@ export async function getPosts(skip = 0, take = 10) {
   });
 
   return posts.map(post => {
-    const likes = post.reactions.filter((r: any) => r.reaction === 'like').length;
-    const dislikes = post.reactions.filter((r: any) => r.reaction === 'dislike').length;
+    const likes = post.reactions.filter((r: Reaction) => r.reaction === 'like').length;
+    const dislikes = post.reactions.filter((r: Reaction) => r.reaction === 'dislike').length;
     const commentsCount = post._count.comments;
     return {
       ...post,

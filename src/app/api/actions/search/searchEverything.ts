@@ -45,12 +45,13 @@ export async function searchEverything(query: string, offset: number = 0) {
       },
       include: {
         posts: { select: { id: true, imageUrl: true } },
-        user: { select: { name: true, realName: true } },
+        user: { select: { name: true, realName: true, hashtag: true } },
       },
       orderBy: { createdAt: 'desc' },
       skip: offset,
       take: 10,
     }),
+    
 
     prisma.user.findMany({
       where: {

@@ -1,24 +1,37 @@
-"use client";
+// src/app/components/settings/SettingsPosts.tsx
+'use client';
 
-import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import PostOptionsMenu from "../post/PostOptionsMenu";
-import EditPostModal from "../post/EditPostModal";
-import DeleteConfirmationModal from "../post/DeleteConfirmationModal";
-import { ThumbsUp, ThumbsDown } from "lucide-react";
+import { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import PostOptionsMenu from '../post/PostOptionsMenu';
+import EditPostModal from '../post/EditPostModal';
+import DeleteConfirmationModal from '../post/DeleteConfirmationModal';
+import { ThumbsUp, ThumbsDown } from 'lucide-react';
+
+interface SettingsPostItem {
+  id: string;
+  title: string;
+  imageUrl: string;
+  tags: string[];
+  createdAt: string;        // ISO string
+  likes: number;
+  dislikes: number;
+  commentsCount: number;
+}
 
 interface Props {
-  posts: any[];
+  posts: SettingsPostItem[];
   userId: string;
 }
 
 export default function SettingsPosts({ posts, userId }: Props) {
-  const [selectedPost, setSelectedPost] = useState<any | null>(null);
-  const [editPostId, setEditPostId] = useState<string | null>(null);
+  const [selectedPost, setSelectedPost] = useState<SettingsPostItem | null>(null);
+  const [editPostId, setEditPostId]     = useState<string | null>(null);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
 
   const handleConfirmDelete = async () => {
+    // TODO: wywołaj API kasujące post
     setDeletePostId(null);
   };
 
@@ -28,15 +41,14 @@ export default function SettingsPosts({ posts, userId }: Props) {
         <h2 className="text-2xl font-bold text-sky-900 mb-4">Your Posts</h2>
 
         {posts.length === 0 && (
-          <p className="text-gray-600">You haven't published any posts yet.</p>
+          <p className="text-gray-600">
+            You haven&apos;t published any posts yet.
+          </p>
         )}
 
-<div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post) => {
-            const likes = post.likes || 0;
-            const dislikes = post.dislikes || 0;
-
+            const { likes, dislikes, tags } = post;
             return (
               <div
                 key={post.id}
@@ -48,9 +60,7 @@ export default function SettingsPosts({ posts, userId }: Props) {
                   width={800}
                   height={500}
                   className="w-full h-56 object-cover cursor-pointer rounded-t"
-                  onClick={() =>
-                    setSelectedPost({ ...post, likes, dislikes })
-                  }
+                  onClick={() => setSelectedPost(post)}
                 />
 
                 <div className="p-4">
@@ -64,12 +74,12 @@ export default function SettingsPosts({ posts, userId }: Props) {
                       </p>
 
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {post.tags?.map((tag: any) => (
+                        {tags.map((tag) => (
                           <span
-                            key={tag.tag?.name || tag}
+                            key={tag}
                             className="text-xs bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full"
                           >
-                            {tag.tag?.name || tag}
+                            {tag}
                           </span>
                         ))}
                       </div>
@@ -84,10 +94,7 @@ export default function SettingsPosts({ posts, userId }: Props) {
                           <span className="font-medium">{dislikes}</span>
                         </div>
                         <div className="text-xs text-gray-500 ml-1">
-                          {Math.round(
-                            (likes / (likes + dislikes || 1)) * 100
-                          )}
-                          %
+                          {Math.round((likes / (likes + dislikes || 1)) * 100)}%
                         </div>
                       </div>
 
@@ -103,9 +110,7 @@ export default function SettingsPosts({ posts, userId }: Props) {
                       postId={post.id}
                       authorId={userId}
                       postTitle={post.title}
-                      currentTags={
-                        post.tags?.map((t: any) => t.tag?.name || t) || []
-                      }
+                      currentTags={tags}
                     />
                   </div>
                 </div>
@@ -148,8 +153,8 @@ export default function SettingsPosts({ posts, userId }: Props) {
                 </div>
                 <div className="text-xs text-gray-500">
                   {Math.round(
-                    (selectedPost.likes /
-                      (selectedPost.likes + selectedPost.dislikes || 1)) * 100
+                    (selectedPost.likes / (selectedPost.likes + selectedPost.dislikes || 1)) *
+                      100
                   )}
                   %
                 </div>
@@ -166,20 +171,19 @@ export default function SettingsPosts({ posts, userId }: Props) {
         </div>
       )}
 
-      {editPostId && (() => {
-        const post = posts.find((p) => p.id === editPostId);
-        if (!post) return null;
-        return (
-          <EditPostModal
-            postId={post.id}
-            currentTitle={post.title}
-            currentTags={
-              post.tags?.map((t: any) => t.tag?.name || t) || []
-            }
-            onClose={() => setEditPostId(null)}
-          />
-        );
-      })()}
+      {editPostId &&
+        (() => {
+          const post = posts.find((p) => p.id === editPostId);
+          if (!post) return null;
+          return (
+            <EditPostModal
+              postId={post.id}
+              currentTitle={post.title}
+              currentTags={post.tags}
+              onClose={() => setEditPostId(null)}
+            />
+          );
+        })()}
 
       {deletePostId && (
         <DeleteConfirmationModal

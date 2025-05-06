@@ -4,11 +4,11 @@ import SettingsPrivacyWrapper from "@/app/components/settings/SettingsPrivacyWra
 import SettingsCommunityWrapper from "@/app/components/settings/SettingsCommunityWrapper";
 import SettingsPostsWrapper from "@/app/components/settings/SettingsPostWrapper";
 
-export default async function SettingsTabPage({
-  params,
-}: {
-  params: { tab: string };
-}) {
+type SettingsTabPageProps = {
+  params: Promise<{ tab: string }>;
+};
+
+export default async function SettingsTabPage({ params }: SettingsTabPageProps) {
   const { tab } = await params;
 
   return (

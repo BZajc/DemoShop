@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import { useEffect, useState } from "react";
 import FirstModal from "./FirstModal";
 import SecondModal from "./SecondModal";
@@ -22,20 +22,20 @@ interface UserInformationProps {
 
 export default function UserInformation(props: UserInformationProps) {
   const { initialData, onClose } = props;
-  const [step, setStep] = useState(1);
-  const [userData, setUserData] = useState<UserData>({
+  const [step, setStep]             = useState(1);
+  const [userData, setUserData]     = useState<UserData>({
     name: initialData?.name || "",
     aboutMe: initialData?.aboutMe || "",
     selectedTags: initialData?.selectedTags || [],
     imageSrc: initialData?.imageSrc || null,
   });
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible]         = useState(true);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting]   = useState(false);
   const router = useRouter();
 
   const handleDataChange = (newData: UserData) => {
-    setUserData((prev) => ({ ...prev, ...newData }));
+    setUserData(prev => ({ ...prev, ...newData }));
   };
 
   useEffect(() => {
@@ -44,17 +44,9 @@ export default function UserInformation(props: UserInformationProps) {
     }
   }, [isVisible]);
 
-  // Remove scroll from body if modal is visible
   useEffect(() => {
-    if (isVisible) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-    };
+    document.body.style.overflow = isVisible ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
   }, [isVisible]);
 
   if (!isVisible) return null;
@@ -62,138 +54,112 @@ export default function UserInformation(props: UserInformationProps) {
   async function handleSubmit() {
     if (step === 3) {
       setIsSubmitting(true);
-
       const formData = new FormData();
       formData.append("name", userData.name || "");
       formData.append("aboutMe", userData.aboutMe || "");
       formData.append("selectedTags", JSON.stringify(userData.selectedTags));
-
       if (userData.imageSrc) {
-        const imageFile = await fetch(userData.imageSrc).then((res) =>
-          res.blob()
-        );
-        formData.append("image", imageFile, "avatar.jpg");
+        const blob = await fetch(userData.imageSrc).then(r => r.blob());
+        formData.append("image", blob, "avatar.jpg");
       }
-
       const response = await updateUserData(formData);
-
       if (response.success) {
         setIsVisible(false);
         await completeUserSetup();
-        console.log("User data updated successfully!", response.user);
-        router.push(
-          `/profile/${response?.user?.name}/${response?.user?.hashtag}`
-        );
+        router.push(`/profile/${response?.user?.name}/${response?.user?.hashtag}`);
       } else {
-        console.error("Failed to update user data:", response.error);
+        console.error("Update failed", response.error);
       }
-
       setIsSubmitting(false);
     } else {
-      setStep(step + 1);
+      setStep(s => s + 1);
     }
   }
 
+  // when user confirms exit
+  const confirmExit = () => {
+    setShowConfirmPopup(false);
+    setIsVisible(false);
+  };
+
   return (
     <section
-      onClick={(e) => {
-        if (e.target === e.currentTarget) setShowConfirmPopup(true);
+      onClick={e => {
+        // only backdrop
+        if (e.target === e.currentTarget) {
+          setShowConfirmPopup(true);
+        }
       }}
-      className="overflow-hidden fixed top-0 left-0 w-full h-full bg-black/85 z-[999] flex items-center justify-center animate-fade-in"
+      className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 overflow-auto"
     >
-      <div className="bg-white rounded-lg text-center w-[600px] relative overflow-hidden max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-md md:max-w-xl bg-white rounded-lg overflow-hidden max-h-[90vh]">
         <button
-          className="absolute p-2 top-0 right-0 cursor-pointer z-10 transition-all duration-300 hover:scale-[1.20]"
+          className="absolute top-2 right-2 p-2 hover:scale-110 z-20"
           onClick={() => setShowConfirmPopup(true)}
         >
-          <X />
+          <X size={24} />
         </button>
 
         <div
-          className="flex transition-transform duration-500 w-[1800px]"
-          style={{ transform: `translateX(-${(step - 1) * 600}px)` }}
+          className="flex transition-transform duration-500"
+          style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
         >
-          {/* First Modal */}
-          <div className="w-[600px] p-4 shrink-0">
-            <FirstModal
-              userData={userData}
-              handleDataChange={handleDataChange}
-            />
+          <div className="w-full flex-shrink-0 p-4">
+            <FirstModal userData={userData} handleDataChange={handleDataChange} />
           </div>
-
-          {/* Second Modal */}
-          <div className="w-[600px] p-4 shrink-0">
-            <SecondModal
-              userData={userData}
-              handleDataChange={handleDataChange}
-            />
+          <div className="w-full flex-shrink-0 p-4">
+            <SecondModal userData={userData} handleDataChange={handleDataChange} />
           </div>
-
-          {/* Third Modal */}
-          <div className="w-[600px] p-4 shrink-0">
+          <div className="w-full flex-shrink-0 p-4">
             <ThirdModal userData={userData} />
           </div>
         </div>
 
-        {/* Buttons Section */}
-        <div className="mt-4 flex justify-between p-4">
-          {/* Back button only visible on step 2 and 3 */}
+        <div className="flex justify-between p-4">
           {step > 1 && (
             <button
-              onClick={() => setStep(step - 1)}
+              onClick={() => setStep(s => s - 1)}
+              className="px-4 py-2 bg-gray-300 rounded-full hover:bg-gray-400"
               disabled={isSubmitting}
-              className={`bg-gray-300 rounded-full py-2 px-4 duration-300 transition-all text-gray-900 hover:text-white hover:bg-gray-500 hover:scale-[1.05] ${
-                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-              }`}
             >
               Back
             </button>
           )}
-
-          {/* Continue and Submit button */}
           <button
             onClick={handleSubmit}
+            className="ml-auto px-4 py-2 bg-sky-200 rounded-full hover:bg-sky-400"
             disabled={isSubmitting}
-            className={`ml-auto bg-sky-200 rounded-full py-2 px-4 duration-300 transition-all text-sky-900 hover:text-white hover:bg-sky-400 hover:scale-[1.05] ${
-              isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-            }`}
           >
-            {isSubmitting ? (
-              <Loader2 className="animate-spin" size={24} />
-            ) : step === 3 ? (
-              "Submit"
-            ) : (
-              "Continue"
-            )}
+            {isSubmitting
+              ? <Loader2 className="animate-spin" />
+              : step === 3
+                ? "Submit"
+                : "Continue"
+            }
           </button>
         </div>
       </div>
 
-      {/* Confirm Popup to close modal */}
+      {/* Confirm Popup */}
       {showConfirmPopup && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center z-[1000]">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center w-[400px]">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Are you sure?
-            </h3>
-            <p className="text-sm text-gray-600 mt-2">
-              You can always update your profile information later in settings.
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black/50 z-60"
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-xs text-center">
+            <p className="mb-4 text-gray-800">
+              Discard changes and close?
             </p>
-
-            <div className="flex justify-center gap-4 mt-4">
+            <div className="flex justify-center gap-3">
               <button
-                className="bg-gray-300 text-gray-900 py-2 px-4 rounded-full transition hover:bg-gray-400"
                 onClick={() => setShowConfirmPopup(false)}
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
               >
-                No
+                Cancel
               </button>
-
               <button
-                className="bg-red-500 text-white py-2 px-4 rounded-full transition hover:bg-red-600"
-                onClick={() => {
-                  setIsVisible(false);
-                  setShowConfirmPopup(false);
-                }}
+                onClick={confirmExit}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
               >
                 Yes, Close
               </button>

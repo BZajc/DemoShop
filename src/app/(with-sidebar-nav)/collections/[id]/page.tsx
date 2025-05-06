@@ -6,14 +6,12 @@ import { authOptions } from "@/app/api/auth/authOptions";
 import CollectionTagManager from "@/app/components/collections/CollectionTagManager";
 import Link from "next/link";
 
-interface CollectionPageProps {
-  params: {
-    id: string;
-  };
-}
+type CollectionPageProps = {
+  params: Promise<{ id: string }>;
+};
 
 export default async function CollectionPage({ params }: CollectionPageProps) {
-  const { id } = params;
+  const { id } = await params;
 
   const session = await getServerSession(authOptions);
 

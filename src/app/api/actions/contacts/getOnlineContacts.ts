@@ -10,7 +10,7 @@ export async function getOnlineContacts() {
 
   const userId = session.user.id;
 
-  // Pobierz kontakty zaakceptowane przez obie strony
+  // Get contacts accepted by both sides
   const contacts = await prisma.contact.findMany({
     where: {
       OR: [
@@ -40,7 +40,7 @@ export async function getOnlineContacts() {
     },
   });
 
-  // Wyciągnij drugą stronę relacji
+  // Get second side relation
   const onlineContacts = contacts
     .map((c) => (c.senderId === userId ? c.receiver : c.sender))
     .filter((user) => isUserOnline(user.lastSeenAt));

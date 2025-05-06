@@ -30,7 +30,6 @@ export default function PostOptionsMenu({
   const [showReportModal, setShowReportModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isDeleted, setIsDeleted] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();

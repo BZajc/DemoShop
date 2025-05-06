@@ -10,7 +10,7 @@ export default async function SidebarNav() {
   const profilePath = `/profile/${session?.user.name}/${session?.user.hashtag}`;
 
   return (
-    <nav className="w-1/6 min-w-[180px] max-w-[250px] bg-sky-900 h-screen p-4 rounded-r-lg flex flex-col justify-between sticky left-0 top-0">
+    <nav className="w-1/6 min-w-[180px] max-w-[250px] bg-sky-900 h-screen p-4 rounded-r-lg flex flex-col justify-between sticky left-0 top-0 overflow-auto">
       {/* Top part of nav */}
       <div>
         <div className="flex items-center justify-center mb-4">

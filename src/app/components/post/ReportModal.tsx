@@ -39,7 +39,7 @@ export default function ReportModal({ onClose }: { onClose: () => void }) {
         <h2 className="text-xl font-semibold mb-4">Report Post</h2>
 
         <p className="text-gray-700 text-sm mb-4">
-          This reporting system is <strong>not actually functional</strong>. It's just a visual
+          This reporting system is <strong>not actually functional</strong>. It&apos;s just a visual
           mockup for demonstration purposes.
         </p>
 

@@ -82,7 +82,8 @@ export default function Comments({ postId }: CommentsProps) {
   };
 
   useEffect(() => {
-    loadComments(true); // reset comments when sort changes
+    loadComments(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy]);
 
   const handleSubmit = async () => {

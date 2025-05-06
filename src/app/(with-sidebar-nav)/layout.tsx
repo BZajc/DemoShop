@@ -15,23 +15,29 @@ export default async function WithSidebarLayout({
   if (!session) {
     redirect("/sign");
   }
-  
+
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100">
       {/* Desktop nav */}
-      <div className="hidden md:block">
+      <div className="hidden md:block fixed top-0 left-0 h-screen z-40">
         <SidebarNav />
       </div>
 
-      {/* Mobile nav (u wouldn't guess) */}
+      {/* Mobile nav */}
       <div className="md:hidden fixed top-0 left-0 z-50">
         <MobileNav profilePath={profilePath} />
       </div>
 
-      <main className="flex-1 p-0 md:p-6">{children}</main>
+      {/* Main content */}
+      <main className="flex-1 ml-0 md:ml-[250px] overflow-y-auto p-0 md:p-6">
+        {children}
+      </main>
 
-      {/* Followed Profiles displayed on the right side of the screen (only desktop view) */}
-      <FeedSidebar />
+      {/* Right sidebar (Followed) */}
+      <div className="hidden lg:block">
+        <FeedSidebar />
+      </div>
     </div>
   );
 }
+

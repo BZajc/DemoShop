@@ -4,13 +4,15 @@ import { auth } from "@/lib/auth";
 import CollectionClient from "@/app/components/collections/CollectionClient";
 import SaveCollectionButton from "@/app/components/collections/SaveCollectionButton";
 
-export default async function PublicCollectionPage(props: {
-  params: { id: string };
-}) {
+type PublicCollectionPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function PublicCollectionPage({ params }: PublicCollectionPageProps) {
+  const { id } = await params;
+
   const session = await auth();
   const currentUserId = session?.user?.id;
-
-  const { id } = await props.params;
 
   const collection = await prisma.collection.findUnique({
     where: { id },

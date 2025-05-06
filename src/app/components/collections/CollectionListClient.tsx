@@ -22,7 +22,7 @@ export default function CollectionListClient({
 }) {
   const [collections, setCollections] = useState(initialCollections);
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  const [confirmId, setConfirmId] = useState<string | null>(null); // id kolekcji do potwierdzenia
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
     setLoadingId(id);

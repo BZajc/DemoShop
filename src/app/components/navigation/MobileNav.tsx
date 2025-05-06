@@ -26,7 +26,7 @@ export default function MobileNav({ profilePath }: MobileNavProps) {
     };
   }, [isOpen]);
 
-  // Funkcja zamykająca menu przy kliknięciu linka
+  // Close menu
   const handleLinkClick = () => {
     setIsOpen(false);
   };

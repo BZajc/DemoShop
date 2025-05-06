@@ -43,7 +43,7 @@ export default function FollowedUserCard({ user }: FollowedUserCardProps) {
           )}
         </div>
       </Link>
-      <UnfollowButton userId={user.id} userName={user.name} />
+      <UnfollowButton userId={user.id} />
     </div>
   );
 }

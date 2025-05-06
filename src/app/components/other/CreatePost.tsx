@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { X, UploadCloud, Loader2 } from "lucide-react";
 import { createPost } from "@/app/api/actions/posts/createPost";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface CreatePostProps {
   setShowAddPost: (value: boolean) => void;
@@ -347,10 +348,12 @@ export default function CreatePost({ setShowAddPost }: CreatePostProps) {
           {/* Image Preview */}
           {imagePreview && (
             <div className="mt-4 relative">
-              <img
+              <Image
                 src={imagePreview}
                 alt="Preview"
                 className="w-full h-auto rounded-lg"
+                width={100}
+                height={100}
               />
               <button
                 className="absolute top-2 right-2 bg-white p-1 rounded-full shadow-md text-gray-600 hover:text-red-500"

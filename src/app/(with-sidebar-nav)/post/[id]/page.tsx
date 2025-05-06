@@ -117,7 +117,7 @@ export default async function PostPage({ params }: PostPageProps) {
           <div className="w-[90%] border-b-2 border-white mx-auto mt-4 mb-2"></div>
 
           {/* Tags */}
-          <div className="flex gap-2 ml-4 mb-4">
+          <div className="flex flex-wrap gap-2 ml-4 mb-4">
             {post.tags.map(({ tag }) => (
               <Link
                 key={tag.name}

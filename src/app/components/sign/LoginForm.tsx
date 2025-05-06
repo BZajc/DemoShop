@@ -83,7 +83,7 @@ export default function LoginForm({ handleFormChange }: LoginFormProps) {
         </p>
         {errors.password && <p className="text-red-500">{errors.password}</p>}
         <button className="px-4 py-2 mb-4 mr-[7rem] text-gray-500">
-          Forgot password?
+          {/* Forgot password? */}
         </button>
 
         {isSubmitting ? (

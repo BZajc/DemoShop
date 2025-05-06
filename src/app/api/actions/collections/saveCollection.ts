@@ -15,16 +15,5 @@ export async function saveCollection(originalId: string) {
 
   if (!original || original.posts.length === 0) return;
 
-  const copy = await prisma.collection.create({
-    data: {
-      name: `${original.name} (copy)`,
-      userId: session.user.id,
-      previewImageUrl: original.previewImageUrl,
-      posts: {
-        connect: original.posts.map((post) => ({ id: post.id })),
-      },
-    },
-  });
-
   redirect('/collections');
 }

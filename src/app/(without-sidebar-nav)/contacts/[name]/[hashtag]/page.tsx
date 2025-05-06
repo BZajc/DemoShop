@@ -7,22 +7,19 @@ import LeftPanel from "@/app/components/contacts/LeftPanel";
 import Link from "next/link";
 import { House } from "lucide-react";
 
-export default async function ChatPage({
-  params,
-}: {
+type ChatPageProps = {
   params: Promise<{ name: string; hashtag: string }>;
-}) {
-  const resolvedParams = await params;
+};
+
+export default async function ChatPage({ params }: ChatPageProps) {
+  const { name, hashtag } = await params;
 
   const session = await auth();
   if (!session?.user) return notFound();
 
   const user = await prisma.user.findUnique({
     where: {
-      name_hashtag: {
-        name: resolvedParams.name,
-        hashtag: resolvedParams.hashtag,
-      },
+      name_hashtag: { name, hashtag },
     },
     select: {
       id: true,

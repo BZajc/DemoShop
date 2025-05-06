@@ -5,10 +5,8 @@ import { followUser } from "@/app/api/actions/follows/followUser";
 
 export default function UnfollowButton({
   userId,
-  userName,
 }: {
   userId: string;
-  userName: string;
 }) {
   const [confirming, setConfirming] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
