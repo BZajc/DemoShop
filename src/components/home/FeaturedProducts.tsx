@@ -1,5 +1,3 @@
-
-
 import Image from "next/image";
 import { Heart, ShoppingCart, ArrowRight, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -75,7 +73,7 @@ export default async function FeaturedProducts() {
         <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 max-w-xl mx-auto mb-6">
           Explore our latest arrivals across categories you love.
         </p>
-        <Button className="px-5 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition inline-flex items-center gap-2">
+        <Button variant="demoshop">
           New Products <ArrowRight className="w-4 h-4" />
         </Button>
       </section>
@@ -84,11 +82,7 @@ export default async function FeaturedProducts() {
       <section className="px-6 py-10">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-2xl font-semibold">New Products</h3>
-          <Button
-            variant="default"
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 inline-flex items-center gap-2"
-          >
+          <Button variant="demoshop">
             See All <ArrowRight className="w-4 h-4" />
           </Button>
         </div>
@@ -119,13 +113,7 @@ export default async function FeaturedProducts() {
                 <span className="text-blue-600 font-bold">
                   {formatPrice(product.price)}
                 </span>
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="text-xs px-3 py-1 rounded-full bg-blue-600 hover:bg-blue-700"
-                >
-                  Add to Cart
-                </Button>
+                <Button variant="demoshop">Add to Cart</Button>
               </div>
             </div>
           ))}

@@ -29,7 +29,7 @@ export default function HeroSection() {
         </p>
         <Button
           asChild
-          className="px-6 py-3 rounded-full bg-blue-600 hover:bg-blue-700"
+          variant="demoshop"
         >
           <a href="/products">Shop Now</a>
         </Button>

@@ -1,9 +1,9 @@
-import HeroSection from "@/app/home/components/HeroSection";
-import FeaturedProducts from "@/app/home/components/FeaturedProducts";
-import Categories from "@/app/home/components/Categories";
-import Testimonials from "@/app/home/components/Testimonials";
-import NewsletterForm from "@/app/home/components/NewsletterForm";
-import Footer from "@/app/home/components/Footer";
+import HeroSection from "@/components/home/HeroSection";
+import FeaturedProducts from "@/components/home/FeaturedProducts";
+import Categories from "@/components/home/Categories";
+import Testimonials from "@/components/home/Testimonials";
+import NewsletterForm from "@/components/home/NewsletterForm";
+import Footer from "@/components/home/Footer";
 
 export default function HomePage() {
   return (
