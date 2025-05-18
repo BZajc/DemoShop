@@ -3,15 +3,26 @@
 import { useState } from 'react'
 import { login } from '@/actions/sign-in'
 import { Button } from '@/components/ui/button'
-import { Mail, Lock } from 'lucide-react'
+import { Mail, Lock, Loader2 } from 'lucide-react'
 
 export default function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await login(new FormData(e.currentTarget as HTMLFormElement))
+    setError(null)
+    setLoading(true)
+
+    const formData = new FormData(e.currentTarget as HTMLFormElement)
+    const response = await login(formData)
+
+    if (response?.error) {
+      setError(response.error)
+      setLoading(false)
+    }
   }
 
   return (
@@ -42,8 +53,10 @@ export default function LoginForm() {
         />
       </div>
 
-      <Button type="submit" className="w-full">
-        Login
+      {error && <p className="text-sm text-red-500">{error}</p>}
+
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Login'}
       </Button>
     </form>
   )

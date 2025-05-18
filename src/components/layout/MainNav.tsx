@@ -1,42 +1,59 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Search, Home, ShoppingCart, Info, Mail } from "lucide-react";
+import {
+  Menu,
+  Search,
+  ShoppingCart,
+  Heart,
+  LogOut,
+  Loader2,
+  Hammer,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import SearchModal from "./SearchModal";
+import ThemeToggleButton from "./ThemeToggleButton";
+import { gql, useQuery } from "@apollo/client";
+
+const ME_QUERY = gql`
+  query Me {
+    me {
+      id
+      email
+      username
+    }
+  }
+`;
 
 export default function MainNav() {
   const pathname = usePathname();
   const isSignPage = pathname === "/sign";
-
   const [scrolled, setScrolled] = useState(false);
-  const inputRef = useRef<HTMLDivElement | null>(null);
-  const [showSearchModal, setShowSearchModal] = useState(false);
-  const [inputVisible, setInputVisible] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const { data, loading } = useQuery(ME_QUERY, { ssr: false });
+  const user = data?.me;
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 0);
+      setScrolled(window.scrollY > 0 || pathname !== "/home");
     };
-
     handleScroll();
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    if (!inputRef.current) return;
-    const observer = new ResizeObserver(([entry]) => {
-      setInputVisible(entry.contentRect.width >= 150);
-    });
-    observer.observe(inputRef.current);
-    return () => observer.disconnect();
-  }, []);
+  }, [pathname]);
 
   if (isSignPage) return null;
+
+  const iconClasses = `p-2 rounded-full transition border cursor-pointer
+    ${
+      scrolled
+        ? "bg-white text-brown-700 border-brown-700 hover:bg-gray-100"
+        : "bg-transparent text-white border-white hover:bg-white/20"
+    }
+    dark:hover:bg-zinc-700`;
 
   return (
     <nav
@@ -44,8 +61,8 @@ export default function MainNav() {
         scrolled ? "bg-white/60 backdrop-blur-md shadow-md" : "bg-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-6">
-        {/* Logo + title */}
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
+        {/* Logo */}
         <Link href="/home" className="flex items-center gap-2 shrink-0">
           <Image
             src="/DemoShopLogoTransparent.png"
@@ -55,7 +72,7 @@ export default function MainNav() {
             className="object-contain"
           />
           <span
-            className={`text-xl font-bold hidden lg:inline transition-colors duration-300 ${
+            className={`text-xl font-bold transition-colors duration-300 ${
               scrolled ? "text-brown-700" : "text-white dark:text-white"
             }`}
           >
@@ -63,87 +80,120 @@ export default function MainNav() {
           </span>
         </Link>
 
-        {/* Navigation links */}
-        <ul
-          className={`hidden md:flex gap-6 text-sm font-medium transition-colors duration-200 ${
-            scrolled ? "text-brown-800 dark:text-brown-300" : "text-white"
-          }`}
-        >
-          <li>
-            <Link
-              href="#home"
-              className="flex items-center gap-1 hover:text-blue-400 transition-all duration-300 hover:scale-[1.2] px-2 py-2"
-            >
-              <Home size={16} />
-              Home
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#products"
-              className="flex items-center gap-1 hover:text-blue-400 transition-all duration-300 hover:scale-[1.2] px-2 py-2"
-            >
-              <ShoppingCart size={16} />
-              Products
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#about"
-              className="flex items-center gap-1 hover:text-blue-400 transition-all duration-300 hover:scale-[1.2] px-2 py-2"
-            >
-              <Info size={16} />
-              About
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="#contact"
-              className="flex items-center gap-1 hover:text-blue-400 transition-all duration-300 hover:scale-[1.2] px-2 py-2"
-            >
-              <Mail size={16} />
-              Contact
-            </Link>
-          </li>
-        </ul>
-
-        <div className="flex-1" />
-
-        {/* Search input + Sign In */}
+        {/* Icons */}
         <div className="flex items-center gap-4 ml-auto">
-          {/* Input ≥640px */}
-          <div ref={inputRef} className="hidden sm:block w-48 sm:w-64 relative">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search shops..."
-              className="w-full pl-10 pr-3 py-2 text-sm rounded-full border border-gray-300 dark:border-zinc-700 bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Ikona na małych ekranach */}
-          <div className="block sm:hidden ml-auto">
+          {/* Navigation menu */}
+          <div className="relative">
             <button
-              onClick={() => setShowSearchModal(true)}
-              className="p-2 rounded-full border border-gray-300 dark:border-zinc-600 bg-white/90 dark:bg-zinc-800 text-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-700 transition"
-              aria-label="Open search"
+              onClick={() => setMenuOpen((prev) => !prev)}
+              className={iconClasses}
+              aria-label="Navigation menu"
             >
-              <Search className="w-5 h-5" />
+              <Menu className="w-5 h-5" />
             </button>
+            {menuOpen && (
+              <ul className="absolute right-0 mt-2 w-48 max-h-60 overflow-y-auto rounded-md shadow-lg bg-white dark:bg-zinc-900 text-sm text-gray-800 dark:text-white z-50 border dark:border-zinc-700">
+                <li>
+                  <Link
+                    href="#home"
+                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                  >
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#products"
+                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                  >
+                    Products
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#about"
+                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                  >
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#contact"
+                    className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                  >
+                    Contact
+                  </Link>
+                </li>
+              </ul>
+            )}
           </div>
 
-          {/* Sign In */}
-          <Link href="/sign">
-            <Button variant="demoshop">Sign In</Button>
+          {/* Search */}
+          <Link href="/search" aria-label="Search">
+            <div className={iconClasses}>
+              <Search className="w-5 h-5" />
+            </div>
           </Link>
+
+          {/* Theme toggle */}
+          <ThemeToggleButton />
+
+          {/* User info / auth */}
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
+          ) : user ? (
+            <>
+              <div
+                className={`h-6 w-[1px] mx-2 transition-colors ${
+                  scrolled ? "bg-brown-700" : "bg-white"
+                }`}
+              />
+
+              <span
+                className={`text-sm max-w-[140px] truncate transition-colors duration-300 ${
+                  scrolled ? "text-brown-700" : "text-white"
+                } dark:text-gray-300`}
+                title={user.username}
+              >
+                Hi, {user.username}
+              </span>
+
+              <Link href="/admin" aria-label="Edit shop">
+                <div className={iconClasses}>
+                  <Hammer className="w-5 h-5" />
+                </div>
+              </Link>
+
+              <Link href="/cart" aria-label="Cart">
+                <div className={iconClasses}>
+                  <ShoppingCart className="w-5 h-5" />
+                </div>
+              </Link>
+
+              <Link href="/favorites" aria-label="Favorites">
+                <div className={iconClasses}>
+                  <Heart className="w-5 h-5" />
+                </div>
+              </Link>
+
+              <form action="/auth/signout" method="post">
+                <button
+                  type="submit"
+                  aria-label="Sign out"
+                  className={iconClasses}
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </form>
+            </>
+          ) : (
+            <Link href="/sign">
+              <Button variant="demoshop">Sign In</Button>
+            </Link>
+          )}
         </div>
       </div>
-
-      {/* Modal */}
-      <SearchModal
-        isOpen={showSearchModal}
-        onClose={() => setShowSearchModal(false)}
-      />
     </nav>
   );
 }

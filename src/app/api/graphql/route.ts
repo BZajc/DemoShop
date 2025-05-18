@@ -3,6 +3,7 @@ import { makeExecutableSchema } from "@graphql-tools/schema";
 import { gql } from "graphql-tag";
 import { GraphQLScalarType, Kind } from "graphql";
 import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase-server"; // ← Twój klient SSR
 
 // Scalar to fix "GraphQLError: ID cannot represent value" error
 const BigIntScalar = new GraphQLScalarType({
@@ -46,9 +47,16 @@ const typeDefs = gql`
     slug: String!
   }
 
+  type Profile {
+    id: String!
+    username: String!
+    email: String!
+  }
+
   type Query {
     featuredProducts(take: Int!): [Product!]!
     categories(take: Int!): [Category!]!
+    me: Profile
   }
 `;
 
@@ -66,6 +74,26 @@ const resolvers = {
         take,
         orderBy: { name: "asc" },
       }),
+    me: async () => {
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return null;
+
+      const profile = await prisma.profiles.findUnique({
+        where: { id: user.id },
+      });
+
+      if (!profile) return null;
+
+      return {
+        id: user.id,
+        email: user.email,
+        username: profile.username,
+      };
+    },
   },
 };
 

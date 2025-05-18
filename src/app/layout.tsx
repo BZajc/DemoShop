@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ApolloWrapper } from "@/providers/ApolloWrapper";
 import MainNav from "@/components/layout/MainNav";
+import { ThemeProvider } from "next-themes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "DemoShop",
-  description: "Small Shop for demonstation purposes",
+  description: "Small Shop for demonstration purposes",
 };
 
 export default function RootLayout({
@@ -25,14 +26,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ApolloWrapper>
-          <MainNav />
-          {children}
-        </ApolloWrapper>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ApolloWrapper>
+            <MainNav />
+            {children}
+          </ApolloWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );
