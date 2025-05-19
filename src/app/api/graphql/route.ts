@@ -39,6 +39,7 @@ const typeDefs = gql`
     price: Float!
     imageUrl: String
     description: String
+    category: Category
   }
 
   type Category {
@@ -68,6 +69,7 @@ const resolvers = {
       prisma.product.findMany({
         take,
         orderBy: { createdAt: "desc" },
+        include: {category: true}
       }),
     categories: (_: unknown, { take }: { take: number }) =>
       prisma.category.findMany({
