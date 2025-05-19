@@ -1,43 +1,41 @@
-'use client'
+"use client";
 
-import { useTheme } from 'next-themes'
-import { Sun, Moon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useTheme } from "next-themes";
+import { Sun, Moon } from "lucide-react";
+import { useEffect, useState } from "react";
+import clsx from "clsx";
 
 export default function ThemeToggleButton() {
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
+    setMounted(true);
+  }, []);
 
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 0)
-    }
+  if (!mounted) return null;
 
-    handleScroll()
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  const isDark = theme === "dark";
 
-  if (!mounted) return null
-
-  const isLight = theme === 'dark'
-
-  const classes = `cursor-pointer p-2 rounded-full transition border ${
-    scrolled
-      ? 'bg-white text-black border-black hover:bg-gray-200'
-      : 'bg-black text-white border-white hover:bg-zinc-700'
-  }`
+  const iconButtonClasses = clsx(
+    "p-2 rounded-full transition border cursor-pointer",
+    "bg-white text-brown-700 border-brown-700 hover:bg-gray-100",
+    "dark:bg-zinc-800 dark:text-white dark:border-zinc-600 dark:hover:bg-zinc-700"
+  );
 
   return (
     <button
-      onClick={() => setTheme(isLight ? 'light' : 'dark')}
-      className={classes}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className={iconButtonClasses}
       aria-label="Toggle theme"
     >
-      {isLight ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+      <span className="transition-all duration-300 ease-in-out">
+        {isDark ? (
+          <Moon className="w-5 h-5 transition-all duration-300" />
+        ) : (
+          <Sun className="w-5 h-5 transition-all duration-300" />
+        )}
+      </span>
     </button>
-  )
+  );
 }

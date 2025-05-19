@@ -3,7 +3,7 @@ import { makeExecutableSchema } from "@graphql-tools/schema";
 import { gql } from "graphql-tag";
 import { GraphQLScalarType, Kind } from "graphql";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/lib/supabase-server"; // ← Twój klient SSR
+import { createClient } from "@/lib/supabase-server";
 
 // Scalar to fix "GraphQLError: ID cannot represent value" error
 const BigIntScalar = new GraphQLScalarType({
@@ -36,9 +36,12 @@ const typeDefs = gql`
   type Product {
     id: BigInt!
     name: String!
+    slug: String!
+    description: String
     price: Float!
     imageUrl: String
-    description: String
+    stock: Int!
+    categoryId: BigInt!
     category: Category
   }
 
@@ -58,6 +61,23 @@ const typeDefs = gql`
     featuredProducts(take: Int!): [Product!]!
     categories(take: Int!): [Category!]!
     me: Profile
+
+    allProducts(
+      take: Int!
+      skip: Int!
+      category: [String!]
+      stock: Boolean
+      maxPrice: Float
+      minPrice: Float
+      sort: String
+    ): [Product!]!
+
+    productCount(
+      category: [String!]
+      stock: Boolean
+      minPrice: Float
+      maxPrice: Float
+    ): Int!
   }
 `;
 
@@ -69,13 +89,15 @@ const resolvers = {
       prisma.product.findMany({
         take,
         orderBy: { createdAt: "desc" },
-        include: {category: true}
+        include: { category: true },
       }),
+
     categories: (_: unknown, { take }: { take: number }) =>
       prisma.category.findMany({
         take,
         orderBy: { name: "asc" },
       }),
+
     me: async () => {
       const supabase = await createClient();
       const {
@@ -95,6 +117,93 @@ const resolvers = {
         email: user.email,
         username: profile.username,
       };
+    },
+
+    allProducts: async (
+      _: unknown,
+      {
+        take,
+        skip,
+        category,
+        stock,
+        maxPrice,
+        minPrice,
+        sort,
+      }: {
+        take: number;
+        skip: number;
+        category?: string[];
+        stock?: boolean;
+        maxPrice?: number;
+        minPrice?: number;
+        sort?: "priceAsc" | "priceDesc" | "newest";
+      }
+    ) => {
+      return prisma.product.findMany({
+        where: {
+          category: category?.length
+            ? { slug: { in: category } }
+            : undefined,
+          stock:
+            stock !== undefined
+              ? stock
+                ? { gt: 0 }
+                : { equals: 0 }
+              : undefined,
+          price:
+            minPrice || maxPrice
+              ? {
+                  ...(minPrice ? { gte: minPrice } : {}),
+                  ...(maxPrice ? { lte: maxPrice } : {}),
+                }
+              : undefined,
+        },
+        orderBy:
+          sort === "priceAsc"
+            ? { price: "asc" }
+            : sort === "priceDesc"
+            ? { price: "desc" }
+            : { createdAt: "desc" },
+        take,
+        skip,
+        include: { category: true },
+      });
+    },
+
+    productCount: async (
+      _: unknown,
+      {
+        category,
+        stock,
+        minPrice,
+        maxPrice,
+      }: {
+        category?: string[];
+        stock?: boolean;
+        minPrice?: number;
+        maxPrice?: number;
+      }
+    ) => {
+      const where = {
+        category: category?.length
+          ? { slug: { in: category } }
+          : undefined,
+        stock:
+          stock !== undefined
+            ? stock
+              ? { gt: 0 }
+              : { equals: 0 }
+            : undefined,
+        price:
+          minPrice || maxPrice
+            ? {
+                ...(minPrice ? { gte: minPrice } : {}),
+                ...(maxPrice ? { lte: maxPrice } : {}),
+              }
+            : undefined,
+      };
+
+      return prisma.product.count({ where });
     },
   },
 };

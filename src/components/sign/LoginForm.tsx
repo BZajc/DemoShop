@@ -56,7 +56,7 @@ export default function LoginForm() {
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Login'}
+        {loading ? <Loader2 className="w-4 h-4 animate-spin dark:text-white" /> : 'Login'}
       </Button>
     </form>
   )
