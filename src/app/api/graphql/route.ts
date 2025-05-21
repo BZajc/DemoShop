@@ -78,6 +78,8 @@ const typeDefs = gql`
       minPrice: Float
       maxPrice: Float
     ): Int!
+
+    product(id: BigInt!): Product
   }
 `;
 
@@ -141,9 +143,7 @@ const resolvers = {
     ) => {
       return prisma.product.findMany({
         where: {
-          category: category?.length
-            ? { slug: { in: category } }
-            : undefined,
+          category: category?.length ? { slug: { in: category } } : undefined,
           stock:
             stock !== undefined
               ? stock
@@ -185,15 +185,9 @@ const resolvers = {
       }
     ) => {
       const where = {
-        category: category?.length
-          ? { slug: { in: category } }
-          : undefined,
+        category: category?.length ? { slug: { in: category } } : undefined,
         stock:
-          stock !== undefined
-            ? stock
-              ? { gt: 0 }
-              : { equals: 0 }
-            : undefined,
+          stock !== undefined ? (stock ? { gt: 0 } : { equals: 0 }) : undefined,
         price:
           minPrice || maxPrice
             ? {
@@ -204,6 +198,13 @@ const resolvers = {
       };
 
       return prisma.product.count({ where });
+    },
+
+    product: async (_: unknown, { id }: { id: number }) => {
+      return prisma.product.findUnique({
+        where: { id },
+        include: { category: true },
+      });
     },
   },
 };

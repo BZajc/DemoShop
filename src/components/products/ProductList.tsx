@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { ShoppingCart, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { gql, useQuery } from "@apollo/client";
@@ -34,7 +35,6 @@ const GET_ALL_PRODUCTS = gql`
       price
       imageUrl
       stock
-      categoryId
       category {
         name
         slug
@@ -44,14 +44,13 @@ const GET_ALL_PRODUCTS = gql`
 `;
 
 interface Product {
-  id: string;
+  id: number;
   name: string;
   slug: string;
   description?: string;
   price: number;
   imageUrl?: string;
   stock: number;
-  categoryId: string;
   category?: {
     name: string;
     slug: string;
@@ -62,10 +61,9 @@ export default function ProductList() {
   const searchParams = useSearchParams();
 
   const take = 16;
-  const page = parseInt(searchParams.get("page") || "1");
+  const page = parseInt(searchParams.get("page") || "1", 10);
   const skip = (page - 1) * take;
 
-  // multiple categories support
   const category = searchParams.getAll("category");
   const stockParam = searchParams.get("stock");
   const stock =
@@ -75,7 +73,7 @@ export default function ProductList() {
   const maxPrice = searchParams.get("maxPrice");
   const sort = searchParams.get("sort") || undefined;
 
-  const { data, loading, error } = useQuery(GET_ALL_PRODUCTS, {
+  const { data, loading, error } = useQuery<{ allProducts: Product[] }>(GET_ALL_PRODUCTS, {
     variables: {
       take,
       skip,
@@ -136,26 +134,37 @@ export default function ProductList() {
               className="object-cover"
             />
           </div>
+
           <h3
             className="text-md font-semibold mb-1 text-brown-700 dark:text-white line-clamp-2"
             title={product.name}
           >
             {product.name}
           </h3>
-          <p className="text-sm text-gray-500 mb-3">
-            ${product.price.toFixed(2)}
-          </p>
 
-          <div className="mt-auto flex items-center justify-between gap-2">
-            <Button variant="demoshop" className="flex-1">
-              Details
-            </Button>
-            <div className="flex items-center gap-2">
-              <div className={iconClasses} aria-label="Add to favorites">
-                <Heart className="w-5 h-5" />
-              </div>
-              <div className={iconClasses} aria-label="Add to cart">
-                <ShoppingCart className="w-5 h-5" />
+          <div className="mt-auto flex flex-col gap-2">
+
+            {/* Product subpage */}
+            <Link href={`/products/${product.slug}-${product.id}`}>
+              <Button variant="demoshop" className="w-full">
+                Details
+              </Button>
+            </Link>
+
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                }).format(product.price)}
+              </p>
+              <div className="flex items-center gap-2">
+                <div className={iconClasses} aria-label="Add to favorites">
+                  <Heart className="w-5 h-5" />
+                </div>
+                <div className={iconClasses} aria-label="Add to cart">
+                  <ShoppingCart className="w-5 h-5" />
+                </div>
               </div>
             </div>
           </div>

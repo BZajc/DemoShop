@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import ThemeToggleButton from "./ThemeToggleButton";
 import { gql, useQuery } from "@apollo/client";
+import { createClient } from "@/lib/supabase-client";
 
 const ME_QUERY = gql`
   query Me {
@@ -34,6 +35,7 @@ export default function MainNav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
 
   const { data, loading } = useQuery(ME_QUERY, { ssr: false });
   const user = data?.me;
@@ -56,6 +58,12 @@ export default function MainNav() {
         : "bg-transparent text-white border-white hover:bg-white/20"
     }
     dark:hover:bg-zinc-700`;
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    window.location.reload()
+  };
 
   return (
     <nav
@@ -130,11 +138,9 @@ export default function MainNav() {
                     <Heart className="w-5 h-5" />
                   </div>
                 </Link>
-                <form action="/auth/signout" method="post">
-                  <button type="submit" className={iconClasses}>
-                    <LogOut className="w-5 h-5" />
-                  </button>
-                </form>
+                <button onClick={handleLogout} className={iconClasses}>
+                  <LogOut className="w-5 h-5" />
+                </button>
               </>
             ) : (
               <Link href="/sign">
@@ -201,19 +207,17 @@ export default function MainNav() {
                     </span>
                   </div>
                 </Link>
-                <form action="/auth/signout" method="post">
-                  <button
-                    type="submit"
-                    className="flex items-center gap-2 w-full text-left"
-                  >
-                    <div className={iconClasses}>
-                      <LogOut className="w-5 h-5" />
-                    </div>
-                    <span className="text-sm text-brown-700 dark:text-white">
-                      Log out
-                    </span>
-                  </button>
-                </form>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 w-full text-left"
+                >
+                  <div className={iconClasses}>
+                    <LogOut className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm text-brown-700 dark:text-white">
+                    Log out
+                  </span>
+                </button>
               </div>
             )}
           </div>
