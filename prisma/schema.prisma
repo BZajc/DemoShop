@@ -10,6 +10,7 @@ datasource db {
   schemas   = ["auth", "public"]
 }
 
+// This actually should be named product_categories but well
 model Category {
   id        Int       @id @default(autoincrement())
   name      String
@@ -23,23 +24,31 @@ model Category {
 }
 
 model Product {
-  id          Int       @id @default(autoincrement())
-  name        String
-  slug        String    @unique
-  description String?
-  price       Decimal   @db.Decimal
-  imageUrl    String?   @map("image_url")
-  stock       Int
-  isActive    Boolean   @default(true) @map("is_active")
-  metadata    Json?     @default("{}")
-  createdAt   DateTime  @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
-  categoryId  Int?      @map("category_id")
-  category    Category? @relation(fields: [categoryId], references: [id], onUpdate: NoAction)
+  id                     Int                      @id @default(autoincrement())
+  name                   String
+  slug                   String                   @unique
+  description            String?
+  price                  Decimal                  @db.Decimal
+  displayImage           String?                  @map("display_image")
+  stock                  Int
+  isActive               Boolean                  @default(true) @map("is_active")
+  createdAt              DateTime                 @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(6)
+  categoryId             Int?                     @map("category_id")
+  category               Category?                @relation(fields: [categoryId], references: [id], onUpdate: NoAction)
+
+  comments               Comment[]                @relation("ProductComments")
+  productOptions                ProductOption[]          @relation("ProductOptions")
+  productFaqs            ProductFaq[]             @relation("ProductFaqs")
+  productGuarantees      ProductGuarantee[]       @relation("ProductGuarantees")
+  productImages          ProductImage[]           @relation("ProductImages")
+  productSpecifications  ProductSpecification[]   @relation("ProductSpecifications")
 
   @@map("products")
   @@schema("public")
 }
+
+
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model profiles {
@@ -47,11 +56,100 @@ model profiles {
   email      String
   created_at DateTime? @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
   username   String    @unique
-  users      AuthUser     @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  comments   Comment[]
+  users      AuthUser  @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@schema("public")
 }
 
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ProductOption {
+  id          Int     @id @default(autoincrement())
+  productId   Int     @map("product_id")
+  optionKey   String  @map("option_key")
+  optionValue String  @map("option_value")
+  product     Product @relation("ProductOptions", fields: [productId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("product_options")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Comment {
+  id        Int      @id @unique @default(autoincrement())
+  productId Int      @map("product_id")
+  userId    String   @map("user_id") @db.Uuid
+  rating    Int
+  content   String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  product   Product  @relation("ProductComments", fields: [productId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  author    profiles @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("comments")
+  @@schema("public")
+}
+
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ProductFaq {
+  id          Int      @id @default(autoincrement())
+  productId   Int      @map("product_id")
+  question    String
+  answer      String
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  product     Product  @relation("ProductFaqs", fields: [productId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("product_faq")
+  @@schema("public")
+}
+
+
+model ProductGuarantee {
+  id          Int      @id @default(autoincrement())
+  productId   Int      @map("product_id")
+  type        String
+  count       Int
+  unit        String
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  product     Product  @relation("ProductGuarantees", fields: [productId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("product_guarantees")
+  @@schema("public")
+}
+
+model ProductImage {
+  id            Int      @id @default(autoincrement())
+  productId     Int?     @map("product_id")
+  url           String?
+  displayOrder  Int?     @map("order")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  product       Product? @relation("ProductImages", fields: [productId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("product_images")
+  @@schema("public")
+}
+
+model ProductSpecification {
+  id            Int      @id @default(autoincrement())
+  productId     Int?     @map("product_id")
+  label         String
+  value         String
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  product       Product? @relation("ProductSpecifications", fields: [productId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("product_specifications")
+  @@schema("public")
+}
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -105,10 +203,6 @@ model AuthUser {
   @@schema("auth")
 }
 
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@ BELOW ARE MORE AUTH SCHEMA MODELS FROM SUPABASE, JUST IGNORE THEM @@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model audit_log_entries {
@@ -157,7 +251,7 @@ model identities {
   updated_at      DateTime? @db.Timestamptz(6)
   email           String?   @default(dbgenerated("lower((identity_data ->> 'email'::text))"))
   id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  users           AuthUser     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users           AuthUser  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([provider_id, provider], map: "identities_provider_id_provider_unique")
   @@index([email])
@@ -223,7 +317,7 @@ model mfa_factors {
   web_authn_credential Json?
   web_authn_aaguid     String?          @db.Uuid
   mfa_challenges       mfa_challenges[]
-  users                AuthUser            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                AuthUser         @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([user_id, phone], map: "unique_phone_factor_per_user")
   @@index([user_id, created_at], map: "factor_id_created_at_idx")
@@ -241,7 +335,7 @@ model one_time_tokens {
   relates_to String
   created_at DateTime            @default(now()) @db.Timestamp(6)
   updated_at DateTime            @default(now()) @db.Timestamp(6)
-  users      AuthUser               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      AuthUser            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([user_id, token_type])
   @@index([relates_to], map: "one_time_tokens_relates_to_hash_idx", type: Hash)
@@ -335,7 +429,7 @@ model sessions {
   tag            String?
   mfa_amr_claims mfa_amr_claims[]
   refresh_tokens refresh_tokens[]
-  users          AuthUser            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users          AuthUser         @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([not_after(sort: Desc)])
   @@index([user_id])
@@ -374,7 +468,6 @@ model sso_providers {
 
   @@schema("auth")
 }
-
 
 enum aal_level {
   aal1

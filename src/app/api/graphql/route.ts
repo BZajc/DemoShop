@@ -1,58 +1,73 @@
 import { createYoga } from "graphql-yoga";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { gql } from "graphql-tag";
-import { GraphQLScalarType, Kind } from "graphql";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase-server";
+import { Prisma } from "@prisma/client";
 
-// Scalar to fix "GraphQLError: ID cannot represent value" error
-const BigIntScalar = new GraphQLScalarType({
-  name: "BigInt",
-  description: "BigInt custom scalar type, serialized as string",
-  serialize(value: unknown): string {
-    if (typeof value === "bigint") return value.toString();
-    if (typeof value === "number") return value.toString();
-    if (typeof value === "string") return value;
-    throw new TypeError(`BigInt cannot represent value: ${value}`);
-  },
-  parseValue(value: unknown): bigint {
-    if (typeof value === "string" || typeof value === "number") {
-      return BigInt(value);
-    }
-    throw new TypeError(`BigInt cannot represent non-numeric value: ${value}`);
-  },
-  parseLiteral(ast) {
-    if (ast.kind === Kind.INT || ast.kind === Kind.STRING) {
-      return BigInt(ast.value);
-    }
-    return null;
-  },
-});
+type FullProduct = Prisma.ProductGetPayload<{
+  include: {
+    productOptions: true;
+    productImages: true;
+    productSpecifications: true;
+    productGuarantees: true;
+    productFaqs: true;
+    category: true;
+  };
+}>;
 
-// Type Defs
 const typeDefs = gql`
-  scalar BigInt
-
   type Product {
-    id: BigInt!
+    id: Int!
     name: String!
     slug: String!
     description: String
     price: Float!
-    imageUrl: String
+    displayImage: String
     stock: Int!
-    categoryId: BigInt!
     category: Category
+    options: [Option!]!
+    images: [Image!]!
+    specifications: [Specification!]!
+    guarantee: [Guarantee!]!
+    faqs: [FAQ!]!
+  }
+
+  type Option {
+    optionKey: String!
+    optionValue: String!
   }
 
   type Category {
-    id: BigInt!
+    id: Int!
     name: String!
     slug: String!
   }
 
+  type Image {
+    url: String!
+    displayOrder: Int
+  }
+
+  type Specification {
+    label: String!
+    value: String!
+  }
+
+  type Guarantee {
+    type: String!
+    count: Int!
+    unit: String!
+  }
+
+  type FAQ {
+    question: String!
+    answer: String!
+    sortOrder: Int!
+  }
+
   type Profile {
-    id: String!
+    id: ID!
     username: String!
     email: String!
   }
@@ -61,7 +76,6 @@ const typeDefs = gql`
     featuredProducts(take: Int!): [Product!]!
     categories(take: Int!): [Category!]!
     me: Profile
-
     allProducts(
       take: Int!
       skip: Int!
@@ -71,21 +85,17 @@ const typeDefs = gql`
       minPrice: Float
       sort: String
     ): [Product!]!
-
     productCount(
       category: [String!]
       stock: Boolean
       minPrice: Float
       maxPrice: Float
     ): Int!
-
-    product(id: BigInt!): Product
+    product(id: Int!): Product
   }
 `;
 
-// Resolvers
 const resolvers = {
-  BigInt: BigIntScalar,
   Query: {
     featuredProducts: (_: unknown, { take }: { take: number }) =>
       prisma.product.findMany({
@@ -105,15 +115,11 @@ const resolvers = {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-
       if (!user) return null;
-
       const profile = await prisma.profiles.findUnique({
         where: { id: user.id },
       });
-
       if (!profile) return null;
-
       return {
         id: user.id,
         email: user.email,
@@ -121,100 +127,94 @@ const resolvers = {
       };
     },
 
-    allProducts: async (
-      _: unknown,
-      {
-        take,
-        skip,
-        category,
-        stock,
-        maxPrice,
-        minPrice,
-        sort,
-      }: {
-        take: number;
-        skip: number;
-        category?: string[];
-        stock?: boolean;
-        maxPrice?: number;
-        minPrice?: number;
-        sort?: "priceAsc" | "priceDesc" | "newest";
-      }
-    ) => {
-      return prisma.product.findMany({
+    allProducts: (_: unknown, args: any) =>
+      prisma.product.findMany({
         where: {
-          category: category?.length ? { slug: { in: category } } : undefined,
+          category: args.category?.length
+            ? { slug: { in: args.category } }
+            : undefined,
           stock:
-            stock !== undefined
-              ? stock
+            args.stock !== undefined
+              ? args.stock
                 ? { gt: 0 }
                 : { equals: 0 }
               : undefined,
           price:
-            minPrice || maxPrice
+            args.minPrice || args.maxPrice
               ? {
-                  ...(minPrice ? { gte: minPrice } : {}),
-                  ...(maxPrice ? { lte: maxPrice } : {}),
+                  ...(args.minPrice ? { gte: args.minPrice } : {}),
+                  ...(args.maxPrice ? { lte: args.maxPrice } : {}),
                 }
               : undefined,
         },
         orderBy:
-          sort === "priceAsc"
+          args.sort === "priceAsc"
             ? { price: "asc" }
-            : sort === "priceDesc"
+            : args.sort === "priceDesc"
             ? { price: "desc" }
             : { createdAt: "desc" },
-        take,
-        skip,
+        take: args.take,
+        skip: args.skip,
         include: { category: true },
-      });
-    },
+      }),
 
-    productCount: async (
-      _: unknown,
-      {
-        category,
-        stock,
-        minPrice,
-        maxPrice,
-      }: {
-        category?: string[];
-        stock?: boolean;
-        minPrice?: number;
-        maxPrice?: number;
-      }
-    ) => {
-      const where = {
-        category: category?.length ? { slug: { in: category } } : undefined,
-        stock:
-          stock !== undefined ? (stock ? { gt: 0 } : { equals: 0 }) : undefined,
-        price:
-          minPrice || maxPrice
-            ? {
-                ...(minPrice ? { gte: minPrice } : {}),
-                ...(maxPrice ? { lte: maxPrice } : {}),
-              }
+    productCount: (_: unknown, args: any) =>
+      prisma.product.count({
+        where: {
+          category: args.category?.length
+            ? { slug: { in: args.category } }
             : undefined,
-      };
+          stock:
+            args.stock !== undefined
+              ? args.stock
+                ? { gt: 0 }
+                : { equals: 0 }
+              : undefined,
+          price:
+            args.minPrice || args.maxPrice
+              ? {
+                  ...(args.minPrice ? { gte: args.minPrice } : {}),
+                  ...(args.maxPrice ? { lte: args.maxPrice } : {}),
+                }
+              : undefined,
+        },
+      }),
 
-      return prisma.product.count({ where });
-    },
-
-    product: async (_: unknown, { id }: { id: number }) => {
-      return prisma.product.findUnique({
+    product: (_: unknown, { id }: { id: number }) =>
+      prisma.product.findUnique({
         where: { id },
-        include: { category: true },
-      });
-    },
+        include: {
+          category: true,
+          productOptions: {
+            select: { optionKey: true, optionValue: true },
+          },
+          productImages: {
+            orderBy: { displayOrder: "asc" },
+            select: { url: true, displayOrder: true },
+          },
+          productSpecifications: {
+            select: { label: true, value: true },
+          },
+          productGuarantees: {
+            select: { type: true, count: true, unit: true },
+          },
+          productFaqs: {
+            orderBy: { sortOrder: "asc" },
+            select: { question: true, answer: true, sortOrder: true },
+          },
+        },
+      }),
+  },
+  Product: {
+    options: (parent: FullProduct) => parent.productOptions,
+    images: (parent: FullProduct) => parent.productImages,
+    specifications: (parent: FullProduct) => parent.productSpecifications,
+    guarantee: (parent: FullProduct) => parent.productGuarantees,
+    faqs: (parent: FullProduct) => parent.productFaqs,
   },
 };
 
-// Schema and Yoga handler
 const schema = makeExecutableSchema({ typeDefs, resolvers });
-
-const yoga = createYoga({
-  schema,
-  graphqlEndpoint: "/api/graphql",
-});
+const yoga = createYoga({ schema, graphqlEndpoint: "/api/graphql" });
 
 export { yoga as GET, yoga as POST };

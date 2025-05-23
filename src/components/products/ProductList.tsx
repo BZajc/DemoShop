@@ -33,7 +33,7 @@ const GET_ALL_PRODUCTS = gql`
       slug
       description
       price
-      imageUrl
+      displayImage
       stock
       category {
         name
@@ -49,7 +49,7 @@ interface Product {
   slug: string;
   description?: string;
   price: number;
-  imageUrl?: string;
+  displayImage?: string;
   stock: number;
   category?: {
     name: string;
@@ -128,7 +128,7 @@ export default function ProductList() {
         >
           <div className="relative w-full h-40 mb-4 rounded-lg overflow-hidden">
             <Image
-              src={product.imageUrl || "/ProductPlaceholder.webp"}
+              src={product.displayImage || "/ProductPlaceholder.webp"}
               alt={product.name}
               fill
               className="object-cover"
